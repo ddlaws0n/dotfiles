@@ -1,0 +1,49 @@
+## MacOS Path Helper, constructs PATH based on /etc/paths & /etc/paths.d/*
+if command -v path_helper &> /dev/null; then
+  eval "$(/usr/libexec/path_helper -s)"
+fi
+
+## Homebrew
+if [[ -d "/opt/homebrew/bin" ]]; then
+  export HOMEBREW_PREFIX="/opt/homebrew"
+elif [[ -d "/usr/local/bin" ]]; then
+  export HOMEBREW_PREFIX="/usr/local"
+fi
+
+export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+
+## XDG Base Directory Specification
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+## Language environment managers
+# Volta (NodeJS)
+export VOLTA_HOME="$HOME/.volta"
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+# Pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+
+# Bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Golang (custom GOPATH optional)
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+
+## Editor preferences
+
+# Command line editor
+export EDITOR="nano"
+export VISUAL="code"
+
+# Pager
+export PAGER="less"
+
+### Locale settings
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"

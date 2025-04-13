@@ -1,0 +1,16 @@
+# Load all configuration files
+for config_file (~/.zsh/*.zsh); do
+  source $config_file
+done
+
+# 1password shell plugins
+[ -f ~/.config/op/plugins.sh ] && source ~/.config/op/plugins.sh
+
+# pnpm path configuration
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# Initialize starship prompt
+eval "$(starship init zsh)"
