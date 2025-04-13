@@ -1,0 +1,231 @@
+{
+  // David Lawson | VSCode Settings
+  // --------------------------------
+
+  // 🌈 UI & Workbench
+  "window.autoDetectColorScheme": false,
+  "window.dialogStyle": "custom",
+  "window.nativeTabs": false,
+  "window.title": "${rootName}",
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "Catppuccin Macchiato",
+  "workbench.iconTheme": "catppuccin-macchiato",
+  "workbench.productIconTheme": "Default",
+  "workbench.fontAliasing": "antialiased",
+  "workbench.list.smoothScrolling": true,
+  "workbench.sideBar.location": "left",
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.tree.expandMode": "singleClick",
+  "workbench.tree.indent": 10,
+  "workbench.editor.tabActionLocation": "left",
+  "workbench.editor.closeOnFileDelete": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.perEditorGroup": true,
+  "workbench.editor.limit.value": 5,
+  "workbench.settings.editor": "json",
+  "workbench.settings.openDefaultSettings": true,
+  "workbench.settings.useSplitJSON": true,
+
+  // 🧠 Editor
+  "editor.rulers": [120],
+  "editor.accessibilitySupport": "off",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Input Mono', monospace",
+  "editor.guides.bracketPairs": "active",
+  "editor.lineNumbers": "interval",
+  "editor.renderWhitespace": "boundary",
+  "editor.linkedEditing": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.suggest.preview": true,
+  "editor.codeActionsOnSave": {
+    "source.sortPackageJson": "explicit"
+  },
+
+  // 🧪 Terminal
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.fontWeight": "300",
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+  "terminal.integrated.tabs.enabled": true,
+  "terminal.external.osxExec": "Ghostty.app",
+
+  // 🧩 Extensions
+  "extensions.autoUpdate": "onlyEnabledExtensions",
+
+  // 🔍 Explorer
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false,
+
+  // 🔁 Git
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "git.untrackedChanges": "separate",
+
+  // 💬 GitHub Copilot
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": true,
+    "scminput": false,
+    "yaml": true
+  },
+  "github.copilot.chat.generateTests.codeLens": true,
+  "github.copilot.chat.reviewSelection.instructions": [{ "file": "copilot.md" }],
+  "github.copilot.chat.codeGeneration.instructions": [{ "file": "copilot.md" }],
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "github.copilot.chat.editor.temporalContext.enabled": true,
+
+  // 🧼 Prettier
+  "prettier.bracketSameLine": true,
+  "prettier.printWidth": 200,
+  "prettier.singleAttributePerLine": true,
+  "prettier.semi": false,
+  "prettier.singleQuote": true,
+
+  // 🌀 Tailwind
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.lint.invalidTailwindDirective": "warning",
+  "tailwindCSS.classAttributes": ["class", "className", "ngClass", "class:list"],
+
+  // 💥 Emmet
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.useInlineCompletions": true,
+
+  // 📁 Project Manager
+  "projectManager.git.baseFolders": ["/Users/dlawson/Projects/"],
+  "projectManager.sortList": "Name",
+
+  // 🔍 Search Exclusions
+  "search.exclude": {
+    "**/.git": true,
+    "**/.github": false,
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/.pnpm": true,
+    "**/.vscode": true,
+    "**/.yarn": true,
+    "**/*.snap": true,
+    "**/*.svg": true,
+    "**/assets": true,
+    "**/bower_components": true,
+    "**/dist/**": true,
+    "**/logs": true,
+    "**/node_modules": true,
+    "**/out/**": true,
+    "**/package-lock.json": true,
+    "**/pnpm-lock.yaml": true,
+    "**/public": true,
+    "**/temp": true,
+    "**/yarn.lock": true,
+    "**/CHANGELOG*": true,
+    "**/LICENSE*": true
+  },
+
+  // 🛡️ Security & Telemetry
+  "security.workspace.trust.untrustedFiles": "open",
+  "redhat.telemetry.enabled": false,
+
+  // 🧠 AI: Wiz
+  "wiz.autoDownloadWizCli": true,
+  "wiz.scanOnSave": false,
+  "wiz.tags": "source=vscode",
+  "wiz.environment": "demo",
+  "wiz.disableAnalytics": true,
+  "wiz.disableScanServiceTelemetry": true,
+  "wiz.Enable IAC Ignore Comments": true,
+
+  // 🧠 Python
+  "python.languageServer": "Pylance",
+  "python.analysis.autoIndent": true,
+  "python.analysis.indexing": true,
+  "python.analysis.typeEvaluation.enableReachabilityAnalysis": true,
+  "python.analysis.supportDocstringTemplate": true,
+  "python.analysis.packageIndexDepths": [
+    {
+      "name": "fastapi",
+      "depth": 3,
+      "includeAllSymbols": true
+    }
+  ],
+  "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.languageServerMode": "default",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.autoFormatStrings": true,
+  "python.defaultInterpreterPath": "/Users/dlawson/Library/Caches/pypoetry/virtualenvs/immigration-pro-27D8KO5_-py3.12/bin/python3.12",
+
+  // 🧪 Ruff
+  "ruff.nativeServer": "on",
+  "ruff.path": ["./.venv/bin/ruff", "~/.local/bin/ruff"],
+  "ruff.enable": true,
+  "ruff.configurationPreference": "filesystemFirst",
+  "ruff.showNotifications": true,
+
+  // 🌍 Terraform
+  "terraform.experimentalFeatures.validateOnSave": true,
+  "terraform.experimentalFeatures.prefillRequiredFields": true,
+
+  // 🧠 Language Specifics
+  "[python]": {
+    "editor.rulers": [88],
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit",
+      "source.fixAll.ruff": "explicit"
+    }
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrapColumn": 120,
+    "editor.rulers": [120],
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrapColumn": 120,
+    "editor.rulers": [120]
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[astro]": {
+    "editor.defaultFormatter": "astro-build.astro-vscode"
+  },
+
+  // 🧠 TypeScript
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // ⚙️ ChatGPT Editing
+  "chat.editing.alwaysSaveWithGeneratedChanges": true,
+
+  // 🌠 Astro
+  "astro.content-intellisense": true
+}
