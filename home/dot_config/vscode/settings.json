@@ -227,5 +227,8 @@
   "chat.editing.alwaysSaveWithGeneratedChanges": true,
 
   // 🌠 Astro
-  "astro.content-intellisense": true
+  "astro.content-intellisense": true,
+
+  // 🧠 Roo
+  "roo-cline.allowedCommands": ["pnpm run test", "pnpm install", "tsc", "git log", "git diff", "git show"]
 }
