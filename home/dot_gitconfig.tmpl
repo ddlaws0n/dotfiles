@@ -12,7 +12,7 @@
 [commit]
 	gpgsign = true
 
-[includeIf "gitdir:{{ .git_workdir }}"]
+[includeIf "gitdir:{{ .git_workdir }}/"]
 	path = {{ .git_workdir }}/.gitconfig
 
 [filter "lfs"]
