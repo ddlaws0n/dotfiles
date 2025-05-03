@@ -9,13 +9,14 @@ alias ...='cd ../..'
 # My aliases
 alias brew='$HOMEBREW_PREFIX/bin/brew'
 alias cz="chezmoi"
-alias czconfig="$VISUAL ~/.config/chezmoi/chezmoi.yaml"
 alias refresh="source ~/.zshrc"
 
 alias tr="tree -a -C --gitignore"
 
+alias czconfig="$VISUAL ~/.config/chezmoi/chezmoi.yaml"
 alias dotfiles="cz edit"
 alias dotsave="cz apply && refresh"
+alias alias="cz edit ~/.zsh/aliases.zsh"
 
 # Wiz
 alias wizcli="~/wizcli"

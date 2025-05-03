@@ -1,4 +1,10 @@
+# System files
 .DS_Store
+
+# IDE
 .vscode
 .idea
+
+# LLMs
+.roo/
 CLAUDE.md
