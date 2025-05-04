@@ -1,4 +1,5 @@
 {
+  // --------------------------------
   // David Lawson | VSCode Settings
   // --------------------------------
 
@@ -8,9 +9,9 @@
   "window.nativeTabs": false,
   "window.title": "${rootName}",
   "window.titleBarStyle": "custom",
-  "workbench.colorTheme": "Catppuccin Macchiato",
-  "workbench.iconTheme": "catppuccin-macchiato",
-  "workbench.productIconTheme": "Default",
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-perfect-mocha",
+  "workbench.productIconTheme": "catppuccin-product-icon-theme",
   "workbench.fontAliasing": "antialiased",
   "workbench.list.smoothScrolling": true,
   "workbench.sideBar.location": "left",
@@ -22,7 +23,7 @@
   "workbench.editor.highlightModifiedTabs": true,
   "workbench.editor.limit.enabled": true,
   "workbench.editor.limit.perEditorGroup": true,
-  "workbench.editor.limit.value": 5,
+  "workbench.editor.limit.value": 15,
   "workbench.settings.editor": "json",
   "workbench.settings.openDefaultSettings": true,
   "workbench.settings.useSplitJSON": true,
@@ -32,17 +33,24 @@
   "editor.accessibilitySupport": "off",
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Input Mono', monospace",
+  "editor.fontSize": 12,
+  "editor.fontLigatures": true,
   "editor.guides.bracketPairs": "active",
   "editor.lineNumbers": "interval",
   "editor.renderWhitespace": "boundary",
   "editor.linkedEditing": true,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
+  "editor.stickyScroll.enabled": true,
   "editor.inlineSuggest.enabled": true,
   "editor.suggest.preview": true,
   "editor.codeActionsOnSave": {
     "source.sortPackageJson": "explicit"
   },
+
+  // 📁 Files
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
 
   // 🧪 Terminal
   "terminal.integrated.cursorBlinking": true,
@@ -79,11 +87,23 @@
   "github.copilot.chat.codeGeneration.instructions": [{ "file": "copilot.md" }],
   "github.copilot.nextEditSuggestions.enabled": true,
   "github.copilot.chat.editor.temporalContext.enabled": true,
+  "github.copilot.chat.agent.thinkingTool": true,
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.languageContext.fix.typescript.enabled": true,
+  "github.copilot.chat.languageContext.inline.typescript.enabled": true,
+  "github.copilot.chat.languageContext.typescript.enabled": true,
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "text": "Use Conventional Commits format: type(scope): subject." },
+    { "text": "Keep the subject under 50 characters, imperative mood." },
+    { "text": "Explain why the change was made, not how." },
+    { "text": "Use present tense and be concise." },
+    { "text": "Avoid vague words like 'fix' or 'update' alone." }
+  ],
 
   // 🧼 Prettier
   "prettier.bracketSameLine": true,
-  "prettier.printWidth": 200,
-  "prettier.singleAttributePerLine": true,
+  "prettier.printWidth": 120,
+  "prettier.singleAttributePerLine": false,
   "prettier.semi": false,
   "prettier.singleQuote": true,
 
@@ -103,7 +123,7 @@
   // 🔍 Search Exclusions
   "search.exclude": {
     "**/.git": true,
-    "**/.github": false,
+    "**/.github": true,
     "**/.nuxt": true,
     "**/.output": true,
     "**/.pnpm": true,
@@ -123,14 +143,15 @@
     "**/temp": true,
     "**/yarn.lock": true,
     "**/CHANGELOG*": true,
-    "**/LICENSE*": true
+    "**/LICENSE*": true,
+    "*/coverage/": true
   },
 
   // 🛡️ Security & Telemetry
   "security.workspace.trust.untrustedFiles": "open",
   "redhat.telemetry.enabled": false,
 
-  // 🧠 AI: Wiz
+  // ✨ Wiz
   "wiz.autoDownloadWizCli": true,
   "wiz.scanOnSave": false,
   "wiz.tags": "source=vscode",
