@@ -12,6 +12,7 @@
   "workbench.colorTheme": "Catppuccin Mocha",
   "workbench.iconTheme": "catppuccin-perfect-mocha",
   "workbench.productIconTheme": "catppuccin-product-icon-theme",
+  "workbench.editor.pinnedTabsOnSeparateRow": true,
   "workbench.fontAliasing": "antialiased",
   "workbench.list.smoothScrolling": true,
   "workbench.sideBar.location": "left",
@@ -30,6 +31,7 @@
 
   // 🧠 Editor
   "editor.rulers": [120],
+  "editor.tabSize": 4,
   "editor.accessibilitySupport": "off",
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Input Mono', monospace",
@@ -51,6 +53,15 @@
   // 📁 Files
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/.hg/store/**": true,
+    "**/node_modules/**": true,
+    "**/.venv*/**": true,
+    "**/.venvs*/**": true,
+    "**/venv*/**": true
+  },
 
   // 🧪 Terminal
   "terminal.integrated.cursorBlinking": true,
@@ -116,9 +127,23 @@
   "emmet.triggerExpansionOnTab": true,
   "emmet.useInlineCompletions": true,
 
+  // 🧠 Even Better TOML
+  "evenBetterToml.formatter.alignComments": true,
+  "evenBetterToml.formatter.alignEntries": true,
+  "evenBetterToml.formatter.allowedBlankLines": 1,
+  "evenBetterToml.formatter.arrayAutoCollapse": true,
+  "evenBetterToml.formatter.arrayAutoExpand": true,
+  "evenBetterToml.formatter.arrayTrailingComma": true,
+  "evenBetterToml.formatter.columnWidth": 100,
+  "evenBetterToml.formatter.indentEntries": true,
+  "evenBetterToml.formatter.indentString": "    ",
+  "evenBetterToml.formatter.indentTables": true,
+  "evenBetterToml.formatter.reorderArrays": true,
+  "evenBetterToml.formatter.reorderKeys": true,
+
   // 📁 Project Manager
   "projectManager.git.baseFolders": ["/Users/dlawson/Projects/"],
-  "projectManager.sortList": "Name",
+  "projectManager.sortList": "Recent",
 
   // 🔍 Search Exclusions
   "search.exclude": {
@@ -222,6 +247,9 @@
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -251,5 +279,8 @@
   "astro.content-intellisense": true,
 
   // 🧠 Roo
-  "roo-cline.allowedCommands": ["pnpm run test", "pnpm install", "tsc", "git log", "git diff", "git show"]
+  "roo-cline.allowedCommands": ["pnpm run test", "pnpm install", "tsc", "git log", "git diff", "git show"],
+  "files.associations": {
+    "*.tmpl": "go-template"
+  }
 }
