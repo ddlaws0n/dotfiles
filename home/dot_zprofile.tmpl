@@ -13,13 +13,13 @@ fi
 export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 
 ## XDG Base Directory Specification
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_CACHE_HOME="$HOME/.cache"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CONFIG_HOME="{{ .chezmoi.homeDir }}/.config"
+export XDG_CACHE_HOME="{{ .chezmoi.homeDir }}/.cache"
+export XDG_DATA_HOME="{{ .chezmoi.homeDir }}/.local/share"
+export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
 
 ## Scripts directory
-export PATH="$HOME/scripts:$PATH"
+export PATH="$HOME/.scripts:$PATH"
 
 ## Language environment managers
 # Volta (NodeJS)

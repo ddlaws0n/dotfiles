@@ -9,6 +9,12 @@ My personal and work-related dotfiles. managed via [chezmoi](https://github.com/
 - [ ] Add custom scripts
 - [ ] Add 1Password integration
 - [ ] Add configuration details
+- [ ] Setup script for MacOS
+  - [ ] Symlink vscode settings
+  - [ ] Symlink vscode projects manager
+  - [ ] Symlink roocode settings (~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings)
+- [ ] gh install ~/.config/gmailctl
+- [ ] setup projects/ dir with structure
 
 ---
 

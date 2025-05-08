@@ -1,7 +1,7 @@
 [user]
-    email = {{ .git_email }}
-    name = {{ .git_name }}
-    signingkey = {{ .git_signingkey }}
+    email = "{{- onepasswordRead .secrets.git_email -}}"
+    name = "{{ .git_name }}"
+    signingkey = "{{- onepasswordRead .secrets.git_signingkey -}}"
 
 [gpg]
 	format = ssh
@@ -12,8 +12,10 @@
 [commit]
 	gpgsign = true
 
+{{ if hasKey . "git_workdir" -}}
 [includeIf "gitdir:{{ .git_workdir }}/"]
 	path = {{ .git_workdir }}/.gitconfig
+{{ end -}}
 
 [filter "lfs"]
 	required = true
