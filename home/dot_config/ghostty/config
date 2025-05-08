@@ -1,12 +1,11 @@
-### Theme settings
-theme = dark:catppuccin-mocha,light:catppuccin-macchiato # latte
-# background = #0B1215
+### Theme
+theme = dark:catppuccin-mocha,light:catppuccin-macchiato # fallback: latte
+# background = #0B1215          # uncomment for custom dark background
 background-opacity = 0.90
 background-blur-radius = 20
 bold-is-bright = true
 
-### Window settings
-# macos-titlebar-style = tabs
+### Window
 window-decoration = true
 window-theme = auto
 window-padding-color = background
@@ -15,46 +14,40 @@ window-padding-y = 0
 window-padding-balance = false
 window-colorspace = "display-p3"
 adjust-cell-height = 10%
+macos-titlebar-style = tabs
 
-shell-integration-features = sudo
-confirm-close-surface = false
+### Shell Integration
+shell-integration-features = true
+# shell-integration-features = sudo   # uncomment to restrict to sudo
 
-### Font settings
+confirm-close-surface = true         # disables close confirmation dialog
+
+### Font
 font-family = JetBrains Mono
 font-size = 12
-cursor-color = #FFA500
-font-feature = +liga
+font-feature = +liga                 # enable ligatures
+cursor-color = #FFA500               # orange cursor
 cursor-style = block
 
+### Clipboard
 clipboard-read = allow
 clipboard-write = allow
 clipboard-trim-trailing-spaces = true
 
-### Split keybindings
-## These are similar to tmux, but with the prefix being cmd+s
-keybind = cmd+s>\=new_split:right
-keybind = cmd+s>-=new_split:down
+### Miscellaneous
+cursor-click-to-move = true
+link-url = true
 
-keybind = cmd+s>c=new_tab
-keybind = cmd+s>shift+l=next_tab
-keybind = cmd+s>shift+h=previous_tab
-keybind = cmd+s>comma=move_tab:-1
-keybind = cmd+s>period=move_tab:1
+### Keybindings
+keybind = global:opt+`=toggle_quick_terminal
 
-keybind = cmd+s>1=goto_tab:1
-keybind = cmd+s>2=goto_tab:2
-keybind = cmd+s>3=goto_tab:3
-keybind = cmd+s>4=goto_tab:4
-keybind = cmd+s>5=goto_tab:5
-keybind = cmd+s>6=goto_tab:6
-keybind = cmd+s>7=goto_tab:7
-keybind = cmd+s>8=goto_tab:8
-keybind = cmd+s>9=goto_tab:9
-
-keybind = cmd+s>j=goto_split:bottom
-keybind = cmd+s>k=goto_split:top
-keybind = cmd+s>h=goto_split:left
-keybind = cmd+s>l=goto_split:right
-
-keybind = cmd+s>z=toggle_split_zoom
-keybind = cmd+s>e=equalize_splits
+# Window splits
+keybind = ctrl+\=new_split:right
+keybind = ctrl+-=new_split:down
+keybind = ctrl+z=toggle_split_zoom
+keybind = ctrl+e=equalize_splits
+keybind = ctrl+h=goto_split:left
+keybind = ctrl+j=goto_split:bottom
+keybind = ctrl+k=goto_split:top
+keybind = ctrl+l=goto_split:right
+keybind = super+shift+enter=new_split:auto
