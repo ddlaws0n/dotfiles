@@ -1,0 +1,56 @@
+date_format = "%Y-%m-%d"
+date_region = "EU"
+ignore_dotfiles = true
+ignore_file_regex = ''
+ignored_files = []
+match_case_list = [
+    "BWS",
+    "CEO",
+    "CPO",
+    "CPTO",
+    "CTO",
+    "CapEx",
+    "DD",
+    "EDH",
+    "EHG",
+    "EHGC",
+    "EULA",
+    "HQ",
+    "KPI",
+    "KPIs",
+    "MM",
+    "MSA",
+    "NDA",
+    "NPR",
+    "NY",
+    "NYC",
+    "OKR",
+    "OKRs",
+    "PDDE",
+    "PRFAQ",
+    "PRFAQs",
+    "QA",
+    "README",
+    "SOW",
+    "SVP",
+    "VP",
+    "YY",
+    "YYYY",
+    "ZD",
+]
+overwrite_existing = false
+separator = "-"
+split_words = true
+stopwords = []
+strip_stopwords = true
+transform_case = "title"
+
+# [projects]
+#     [projects.personal]
+#         path = "~/personal-docs"
+#         type = "jd"
+
+#     [projects.work]
+#         path      = "~/work-docs/theSkimm"
+#         stopwords = ["pptx"]
+#         type      = "jd"
