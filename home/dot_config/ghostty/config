@@ -20,13 +20,15 @@ macos-titlebar-style = tabs
 shell-integration-features = true
 # shell-integration-features = sudo   # uncomment to restrict to sudo
 
-confirm-close-surface = true         # disables close confirmation dialog
+# disables close confirmation dialog
+confirm-close-surface = true
 
 ### Font
 font-family = JetBrains Mono
 font-size = 12
 font-feature = +liga                 # enable ligatures
-cursor-color = #FFA500               # orange cursor
+# orange cursor
+cursor-color = #FFA500
 cursor-style = block
 
 ### Clipboard

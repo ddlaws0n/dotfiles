@@ -14,7 +14,6 @@ zinit light Aloxaf/fzf-tab
 zinit ice wait lucid
 zinit light sharkdp/bat
 
-
 zinit ice wait lucid
 zinit snippet OMZ::plugins/git/git.plugin.zsh
 

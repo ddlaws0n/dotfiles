@@ -1,0 +1,49 @@
+{
+  "mcpServers": {
+    "perplexity-ask": {
+      "command": "npx",
+      "args": ["-y", "@chatmcp/server-perplexity-ask"],
+      "env": {
+        "PERPLEXITY_API_KEY": "{{- onepasswordRead (index .secrets `perplexity-api-key`) }}"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@21st-dev/magic@latest",
+        "API_KEY={{- onepasswordRead (index .secrets `21-dev-api-key`) }}"
+      ]
+    },
+    "firecrawl-mcp": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "{{- onepasswordRead (index .secrets `firecrawl-api-key`) }}"
+      }
+    },
+    "taskmaster-ai": {
+			"command": "npx",
+			"args": ["-y", "--package=task-master-ai", "task-master-ai"],
+			"env": {
+				"ANTHROPIC_API_KEY": "{{- onepasswordRead (index .secrets `anthropic-api-key`) }}",
+				"PERPLEXITY_API_KEY": "{{- onepasswordRead (index .secrets `perplexity-api-key`) }}"
+			}
+		}
+    {{/* "airtable": {
+      "command": "npx",
+      "args": ["-y", "airtable-mcp-server"],
+      "env": {
+        "airtable-api-key": "{{- onepasswordRead (index .secrets `airtable-api-key`) }}"
+      }
+    } */}}
+  }
+}
