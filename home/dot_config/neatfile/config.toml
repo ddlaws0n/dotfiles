@@ -39,18 +39,18 @@ match_case_list = [
     "ZD",
 ]
 overwrite_existing = false
-separator = "-"
+separator = "Space"
 split_words = true
 stopwords = []
 strip_stopwords = true
 transform_case = "title"
 
-# [projects]
-#     [projects.personal]
-#         path = "~/personal-docs"
-#         type = "jd"
+[projects]
+    [projects.personal]
+        path = "~/Documents"
+        type = "jd"
 
-#     [projects.work]
-#         path      = "~/work-docs/theSkimm"
-#         stopwords = ["pptx"]
-#         type      = "jd"
+    [projects.work]
+        path      = "~/Library/CloudStorage/GoogleDrive-david.lawson@wiz.io/My Drive"
+        stopwords = ["pptx"]
+        type      = "jd"
