@@ -39,7 +39,12 @@
       "args": ["-y", "firecrawl-mcp"],
       "env": {
         "FIRECRAWL_API_KEY": "{{- onepasswordRead .my.firecrawl_api_key "my" }}"
-      }
+      },
+      "alwaysAllow": [
+        "firecrawl_search",
+        "firecrawl_scrape",
+        "firecrawl_map"
+      ]
     },
     "taskmaster-ai": {
       "command": "npx",
