@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-# Sign in to work account only on work computers.
-if [ "{{ .work_computer }}" = "true" ]; then
-  eval "$(op signin wizio)"
-fi
