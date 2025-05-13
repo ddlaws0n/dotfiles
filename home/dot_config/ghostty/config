@@ -1,55 +1,25 @@
-### Theme
-theme = dark:catppuccin-mocha,light:catppuccin-macchiato # fallback: latte
-# background = #0B1215          # uncomment for custom dark background
-background-opacity = 0.90
-background-blur-radius = 20
-bold-is-bright = true
+theme = catppuccin-mocha
+# see https://github.com/catppuccin/ghostty
 
-### Window
-window-decoration = true
-window-theme = auto
-window-padding-color = background
-window-padding-x = 0
-window-padding-y = 0
-window-padding-balance = false
-window-colorspace = "display-p3"
-adjust-cell-height = 10%
-macos-titlebar-style = tabs
-
-### Shell Integration
-shell-integration-features = true
-# shell-integration-features = sudo   # uncomment to restrict to sudo
-
-# disables close confirmation dialog
-confirm-close-surface = true
-
-### Font
-font-family = JetBrains Mono
-font-size = 12
-font-feature = +liga                 # enable ligatures
-# orange cursor
-cursor-color = #FFA500
-cursor-style = block
-
-### Clipboard
-clipboard-read = allow
-clipboard-write = allow
-clipboard-trim-trailing-spaces = true
-
-### Miscellaneous
-cursor-click-to-move = true
-link-url = true
-
-### Keybindings
-keybind = global:opt+`=toggle_quick_terminal
-
-# Window splits
-keybind = ctrl+\=new_split:right
-keybind = ctrl+-=new_split:down
-keybind = ctrl+z=toggle_split_zoom
-keybind = ctrl+e=equalize_splits
-keybind = ctrl+h=goto_split:left
-keybind = ctrl+j=goto_split:bottom
-keybind = ctrl+k=goto_split:top
-keybind = ctrl+l=goto_split:right
-keybind = super+shift+enter=new_split:auto
+palette = 0=#45475a
+palette = 1=#f38ba8
+palette = 2=#a6e3a1
+palette = 3=#f9e2af
+palette = 4=#89b4fa
+palette = 5=#f5c2e7
+palette = 6=#94e2d5
+palette = 7=#bac2de
+palette = 8=#585b70
+palette = 9=#f38ba8
+palette = 10=#a6e3a1
+palette = 11=#f9e2af
+palette = 12=#89b4fa
+palette = 13=#f5c2e7
+palette = 14=#94e2d5
+palette = 15=#a6adc8
+background = 1e1e2e
+foreground = cdd6f4
+cursor-color = f5e0dc
+cursor-text = 1e1e2e
+selection-background = 353749
+selection-foreground = cdd6f4
