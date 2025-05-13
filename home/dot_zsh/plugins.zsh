@@ -15,6 +15,9 @@ zinit ice wait lucid
 zinit light sharkdp/bat
 
 zinit ice wait lucid
+zinit light MichaelAquilina/zsh-you-should-use
+
+zinit ice wait lucid
 zinit snippet OMZ::plugins/git/git.plugin.zsh
 
 zinit ice wait lucid
