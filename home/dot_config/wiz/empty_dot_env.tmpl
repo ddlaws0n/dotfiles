@@ -1,0 +1,4 @@
+{{- if .work_computer -}}
+    WIZ_CLIENT_ID="{{- onepasswordRead .work.wiz_client_id "wizio" }}"
+    WIZ_CLIENT_SECRET="{{- onepasswordRead .work.wiz_client_secret "wizio" }}"
+{{- end }}

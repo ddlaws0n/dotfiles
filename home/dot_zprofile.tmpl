@@ -10,7 +10,10 @@ elif [[ -d "/usr/local/bin" ]]; then
   export HOMEBREW_PREFIX="/usr/local"
 fi
 
-export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+fi
+
 
 ## XDG Base Directory Specification
 export XDG_CONFIG_HOME="{{ .chezmoi.homeDir }}/.config"
@@ -34,6 +37,12 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # Golang (custom GOPATH optional)
 export GOPATH="$HOME/go"
 export PATH="$GOPATH/bin:$PATH"
+
+## Custom paths and environment variables
+{{ if .work_computer }}
+# Wiz credentials
+export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
+{{ end }}
 
 ## Editor preferences
 

@@ -2,23 +2,40 @@
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
       "alwaysAllow": [
         "resolve-library-id"
       ]
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "alwaysAllow": [
         "sequentialthinking"
+      ]
+    },
+    "repomix": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "repomix",
+        "--mcp"
       ]
     }
     {{- if .use_secrets -}}
     ,
     "perplexity-ask": {
       "command": "npx",
-      "args": ["-y", "@chatmcp/server-perplexity-ask"],
+      "args": [
+        "-y",
+        "@chatmcp/server-perplexity-ask"
+      ],
       "env": {
         "PERPLEXITY_API_KEY": "{{- onepasswordRead .my.perplexity_api_key "my" }}"
       },
@@ -36,7 +53,10 @@
     },
     "firecrawl-mcp": {
       "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
       "env": {
         "FIRECRAWL_API_KEY": "{{- onepasswordRead .my.firecrawl_api_key "my" }}"
       },
@@ -48,17 +68,45 @@
     },
     "taskmaster-ai": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
       "env": {
-        "ANTHROPIC_API_KEY":"{{- onepasswordRead .my.anthropic_api_key "my" }}",
+        "ANTHROPIC_API_KEY": "{{- onepasswordRead .my.anthropic_api_key "my" }}",
         "PERPLEXITY_API_KEY": "{{- onepasswordRead .my.perplexity_api_key "my" }}"
       }
     }
     {{- if .work_computer -}}
     ,
+    "wiz-mcp-server": {
+      "disabled": false,
+      "command": "/opt/homebrew/bin/uv",
+      "cwd": "{{ .chezmoi.git_workdir }}/6-mcp/wiz-mcp",
+      "args": [
+      "run",
+      "--with",
+      "mcp[cli]",
+      "mcp",
+      "run",
+      "./src/wiz_mcp_server/server.py"
+      ],
+      "env": {
+      "WIZ_DOTENV_PATH": "{{ .chezmoi.homeDir }}/wiz/.env"
+      },
+      "alwaysAllow": [
+      "wiz_get_issues",
+      "wiz_get_threats",
+      "wiz_search"
+      ]
+    },
     "airtable": {
       "command": "npx",
-      "args": ["-y", "airtable-mcp-server"],
+      "args": [
+        "-y",
+        "airtable-mcp-server"
+      ],
       "env": {
         "airtable-api-key": "{{- onepasswordRead .work.airtable_api_key "wizio" }}"
       }
