@@ -1,14 +1,19 @@
 {{- $use_secrets := promptBoolOnce . "use_secrets" "Use secrets from 1Password? (true/false)" -}}
+{{- $git_dir := promptStringOnce . "git_dir" "Git directory where your projects are located:" -}}
 {{- $work_computer := promptBoolOnce . "work_computer" "Is this a work computer for daily driving? (true/false)" -}}
 {{- $is_ci_workflow := promptBoolOnce . "is_ci_workflow" "Is this a CI workflow? (true/false)" -}}
 
 [data]
-    git_name = 'David D Lawson'
-    gh_user           = "ddlaws0n"
-    git_workdir       = "{{ .chezmoi.homeDir }}/Repos"
-    is_ci_workflow    = {{ if $is_ci_workflow }}true{{ else }}false{{ end }}
-    work_computer = {{ if $work_computer }}true{{ else }}false{{ end }}
-    use_secrets       = {{ if $use_secrets }}true{{ else }}false{{ end }}
+    git_name         = 'David D Lawson'
+    gh_user          = "ddlaws0n"
+    git_dir          = "{{ .chezmoi.homeDir }}/{{ $git_dir }}"
+    use_secrets      = {{ $use_secrets }}
+    is_ci_workflow   = {{ $is_ci_workflow }}
+    work_computer    = {{ if $work_computer }}true{{ else }}false{{ end }}
+    {{ if $work_computer -}}
+    git_workdir      = "{{ .chezmoi.homeDir }}/{{ $git_dir }}/work"
+    {{- end }}
+
 
 [edit]
     args    = ["-r", "--wait"]
