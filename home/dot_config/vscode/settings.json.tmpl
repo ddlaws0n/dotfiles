@@ -62,6 +62,12 @@
     "**/.venvs*/**": true,
     "**/venv*/**": true
   },
+    "files.associations": {
+    "*.tmpl": "go-template",
+    "*.tfvars": "hcl",
+    "*.tfstate": "json",
+    "*.tfstate.backup": "json",
+  },
 
   // 🧪 Terminal
   "terminal.integrated.cursorBlinking": true,
@@ -111,6 +117,9 @@
     { "text": "Avoid vague words like 'fix' or 'update' alone." }
   ],
 
+  // ⚙️ ChatGPT Editing
+  "chat.editing.alwaysSaveWithGeneratedChanges": true,
+
   // 🧼 Prettier
   "prettier.bracketSameLine": true,
   "prettier.printWidth": 120,
@@ -142,7 +151,7 @@
   "evenBetterToml.formatter.reorderKeys": true,
 
   // 📁 Project Manager
-  "projectManager.git.baseFolders": ["{{ .chezmoi.git_dir}}"],
+  "projectManager.git.baseFolders": ["{{ .git_dir }}"],
   "projectManager.sortList": "Recent",
 
   // 🔍 Search Exclusions
@@ -203,7 +212,7 @@
   "python.analysis.autoImportCompletions": true,
   "python.analysis.completeFunctionParens": true,
   "python.analysis.autoFormatStrings": true,
-  "python.defaultInterpreterPath": "/Users/dlawson/Library/Caches/pypoetry/virtualenvs/immigration-pro-27D8KO5_-py3.12/bin/python3.12",
+  "python.defaultInterpreterPath": "./.venv/bin/python",
 
   // 🧪 Ruff
   "ruff.nativeServer": "on",
@@ -216,7 +225,17 @@
   "terraform.experimentalFeatures.validateOnSave": true,
   "terraform.experimentalFeatures.prefillRequiredFields": true,
 
+  // 🧠 TypeScript
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
   // 🧠 Language Specifics
+  "[astro]": {
+    "editor.defaultFormatter": "astro-build.astro-vscode",
+    "astro.content-intellisense": true,
+    "astro.enableScriptIntellisense": true,
+    "astro.enableSnippets": true,
+    "astro.enableTagNameCompletion": true
+  },
   "[python]": {
     "editor.rulers": [88],
     "editor.tabSize": 4,
@@ -264,23 +283,5 @@
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[astro]": {
-    "editor.defaultFormatter": "astro-build.astro-vscode"
-  },
-
-  // 🧠 TypeScript
-  "typescript.updateImportsOnFileMove.enabled": "always",
-
-  // ⚙️ ChatGPT Editing
-  "chat.editing.alwaysSaveWithGeneratedChanges": true,
-
-  // 🌠 Astro
-  "astro.content-intellisense": true,
-
-  // 🧠 Roo
-  "roo-cline.allowedCommands": ["pnpm run test", "pnpm install", "tsc", "git log", "git diff", "git show"],
-  "files.associations": {
-    "*.tmpl": "go-template"
   }
 }
