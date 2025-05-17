@@ -1,6 +1,6 @@
 [user]
+	name = "{{ .git_name }}"
     email = "{{- onepasswordRead .my.git_email "my" }}"
-    name = "{{ .git_name }}"
     signingkey = "{{- onepasswordRead .my.git_signingkey "my" }}"
 
 [gpg]
@@ -9,8 +9,21 @@
 [gpg "ssh"]
 	program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
 
+[core]
+    editor = code --wait
+	excludesfile = "{{ .chezmoi.homeDir }}.gitignore"
+
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	ui = true
+
 [commit]
 	gpgsign = true
+
+[tag]
+	gpgSign = true
 
 {{ if hasKey . "git_workdir" -}}
 [includeIf "gitdir:{{ .git_workdir }}/"]
@@ -29,9 +42,8 @@
 [fetch]
 	prune = true
 
-[core]
-    editor = code --wait
-	excludesfile = "/Users/dlawson/.gitignore"
+[pull]
+	rebase = false
 
 [status]
     short = true
