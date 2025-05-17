@@ -28,8 +28,7 @@
         "--mcp"
       ]
     }
-    {{- if .use_secrets -}}
-    ,
+    {{- if .use_secrets -}},
     "perplexity-ask": {
       "command": "npx",
       "args": [
@@ -78,27 +77,26 @@
         "PERPLEXITY_API_KEY": "{{- onepasswordRead .my.perplexity_api_key "my" }}"
       }
     }
-    {{- if .work_computer -}}
-    ,
+    {{- if .work_computer -}},
     "wiz-mcp-server": {
       "disabled": false,
       "command": "/opt/homebrew/bin/uv",
-      "cwd": "{{ .chezmoi.git_workdir }}/6-mcp/wiz-mcp",
+      "cwd": "{{ .chezmoi.git_dir }}/6-mcp/wiz-mcp",
       "args": [
-      "run",
-      "--with",
-      "mcp[cli]",
-      "mcp",
-      "run",
-      "./src/wiz_mcp_server/server.py"
+        "run",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "./src/wiz_mcp_server/server.py"
       ],
       "env": {
-      "WIZ_DOTENV_PATH": "{{ .chezmoi.homeDir }}/wiz/.env"
+        "WIZ_DOTENV_PATH": "{{ with .chezmoi.env.XDG_CONFIG_HOME }}{{ . }}/wiz/.env{{ end }}"
       },
       "alwaysAllow": [
-      "wiz_get_issues",
-      "wiz_get_threats",
-      "wiz_search"
+        "wiz_get_issues",
+        "wiz_get_threats",
+        "wiz_search"
       ]
     },
     "airtable": {
