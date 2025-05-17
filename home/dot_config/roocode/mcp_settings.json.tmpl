@@ -91,7 +91,7 @@
         "./src/wiz_mcp_server/server.py"
       ],
       "env": {
-        "WIZ_DOTENV_PATH": "{{ with .chezmoi.env.XDG_CONFIG_HOME }}{{ . }}/wiz/.env{{ end }}"
+        "WIZ_DOTENV_PATH": "{{ .chezmoi.homeDir }}/.config/wiz/.env"
       },
       "alwaysAllow": [
         "wiz_get_issues",
