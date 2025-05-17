@@ -1,7 +1,7 @@
-date_format = "%Y-%m-%d"
+date_format = "%Y-%m-%d - "
 date_region = "EU"
 ignore_dotfiles = true
-ignore_file_regex = ''
+ignore_file_regex = '\\.(json|py|js|ts|tsx|jsx|html|css|scss|less|md|yaml|yml|xml|log|tmp|bak)$'
 ignored_files = []
 match_case_list = [
     "BWS",
@@ -48,9 +48,4 @@ transform_case = "title"
 [projects]
     [projects.personal]
         path = "~/Documents"
-        type = "jd"
-
-    [projects.work]
-        path      = "~/Library/CloudStorage/GoogleDrive-david.lawson@wiz.io/My Drive"
-        stopwords = ["pptx"]
-        type      = "jd"
+        type = ""
