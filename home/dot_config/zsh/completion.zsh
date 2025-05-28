@@ -16,3 +16,6 @@ zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
 # Bash completions
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /opt/homebrew/bin/terraform terraform
+
+# Ensure fpath includes paths for custom completions, assuming script is in /opt/homebrew
+fpath=($HOMEBREW_PREFIX/share/zsh/site-functions $fpath)

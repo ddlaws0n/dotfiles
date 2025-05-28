@@ -51,10 +51,13 @@ alias tr="tree -a -C --gitignore"
 alias czconfig="$VISUAL ~/.config/chezmoi/chezmoi.yaml"
 alias dotfiles="cz edit"
 alias dotsave="cz apply && refresh"
-alias zshconfig="cz edit ~/.zsh"
+alias zshconfig="cz edit ~/.config/zsh"
 
 # Wiz
 alias wizcli="~/wizcli"
+
+# AI
+alias tm="task-master"
 
 # Functions
 buf() {
