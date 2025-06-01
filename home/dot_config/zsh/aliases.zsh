@@ -25,7 +25,6 @@ cd() {
 
 # Git
 alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short' # A nicer Git Log
-
 applyignore() {
     # DESC: Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
 
@@ -44,28 +43,45 @@ alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete"
 # My aliases
 alias brew='$HOMEBREW_PREFIX/bin/brew'
 alias cz="chezmoi"
-alias refresh="source ~/.zshrc"
-
+refresh() {
+    source ~/.zshrc
+}
 alias tr="tree -a -C --gitignore"
 
-alias czconfig="$VISUAL ~/.config/chezmoi/chezmoi.yaml"
+# Function for flexibility (takes an optional filename) and fallback editor.
+# Usage: scripts [filename_in_scripts_dir]
+# If no filename, opens the ~/.scripts directory (or a file named .scripts) with the editor.
+scripts() {
+    local editor="${VISUAL:-${EDITOR:-vi}}" # Use $VISUAL, then $EDITOR, then vi
+    local target_path="$HOME/.scripts"
+    if [[ -n "$1" ]]; then
+        # If an argument is provided, assume it's a file within ~/.scripts
+        target_path="$target_path/$1"
+    fi
+    command "$editor" "$target_path"
+}
+
+alias czconfig="${VISUAL:-${EDITOR:-vi}} $HOME/.config/chezmoi/chezmoi.yaml"
 alias dotfiles="cz edit"
-alias dotsave="cz apply && refresh"
-alias zshconfig="cz edit ~/.config/zsh"
 
-# Wiz
-alias wizcli="~/wizcli"
+# Function to run 'refresh' only if 'cz apply' succeeds and provides feedback.
+dotsave() {
+    if command chezmoi apply; then
+        echo "Chezmoi changes applied. Reloading Zsh..."
+        refresh # 'refresh' is assumed to be an alias for 'source ~/.zshrc'
+    else
+        echo "Error: 'chezmoi apply' failed. Zsh not reloaded." >&2
+        return 1 # Indicates failure
+    fi
+}
 
-# AI
-alias tm="task-master"
-
-# Functions
-buf() {
-    # buf: Backup file with time stamp
-    local filename
-    local filetime
-
-    filename="${1}"
-    filetime=$(date +%Y%m%d_%H%M%S)
-    cp -a "${filename}" "${filename}_${filetime}"
+# Function to reload Zsh (via 'refresh'), adds feedback,
+zshconfig() {
+    if command chezmoi edit "$HOME/.config/zsh"; then # Edit Zsh config dir
+        echo "Zsh configuration edited. Reloading Zsh..."
+        refresh # Reload Zsh using the 'refresh' alias
+    else
+        echo "Error: Editing Zsh configuration failed or was cancelled. Zsh not reloaded." >&2
+        return 1 # Indicates failure
+    fi
 }
