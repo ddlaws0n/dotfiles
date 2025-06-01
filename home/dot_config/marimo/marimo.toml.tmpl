@@ -25,7 +25,7 @@ api_key = "{{- onepasswordRead .my.perplexity_api_key "my" }}"
 
 [ai.open_ai]
 model = "claude-sonnet-4-20250514"
-api_key = "{{- onepasswordRead .my.open_ai_key "my" }}"
+api_key = "{{- onepasswordRead .my.anthropic_api_key "my" }}"
 {{- end }}
 
 [package_management]
