@@ -25,7 +25,7 @@
 [tag]
 	gpgSign = true
 
-{{ if hasKey . "git_workdir" -}}
+{{ if hasKey . "work_computer" -}}
 [includeIf "gitdir:{{ .git_workdir }}/"]
 	path = {{ .git_workdir }}/.gitconfig
 {{ end -}}
