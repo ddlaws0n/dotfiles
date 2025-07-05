@@ -1,0 +1,4 @@
+# Global recipes for just
+
+default:
+  @just --summary --list-heading "Global recipes:\n"
