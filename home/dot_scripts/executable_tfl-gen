@@ -1,0 +1,330 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["pandas", "python-docx", "docxtpl"]
+# ///
+
+"""
+tfl-gen
+==========================
+
+Generate a stylised TFL journey statement (DOCX, optionally PDF) from a CSV.
+
+Template rules
+--------------
+* In the Word template put your header fields:
+      {{ statement_date }}, {{ oyster_card }}, {{ start_date }}, {{ end_date }}
+* Somewhere in the body add a paragraph that contains ONLY the text:
+
+      <<table>>
+
+  – that marks exactly where the table will be inserted.
+
+Usage
+-----
+    tfl-gen \
+        --csv journeys.csv \
+        --template tfl_template_new.docx \
+        --output output/tfl_statement.docx \
+        --oyster 072084354215
+
+One-shot utilities
+------------------
+    tfl-gen --schema
+    tfl-gen --template-csv              # writes ./tfl_template.csv
+    tfl-gen --template-csv data/example.csv
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from textwrap import dedent
+
+import pandas as pd
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Pt
+from docxtpl import DocxTemplate
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CSV schema helpers
+# ───────────────────────────────────────────────────────────────────────────────
+EXAMPLE_SCHEMA = ["date", "start_time", "end_time", "journey_action", "charge"]
+
+EXAMPLE_ROWS = [
+    dict(
+        date="2024-12-09",
+        start_time="11:59",
+        end_time="12:09",
+        journey_action="Canary Wharf to Canning Town",
+        charge=1.90,
+    ),
+    dict(
+        date="2024-12-09",
+        start_time="14:37",
+        end_time="14:45",
+        journey_action="Canning Town to Canary Wharf",
+        charge=1.90,
+    ),
+]
+
+
+def print_schema() -> None:
+    """Print the required CSV columns, in order, with a short explanation."""
+    help_text = dedent(
+        f"""
+        Expected CSV schema (5 columns, *no* header renaming):
+
+            {', '.join(EXAMPLE_SCHEMA)}
+
+        • date          – ISO date (YYYY-MM-DD)
+        • start_time    – HH:MM 24-hour time the tap-IN occurred
+        • end_time      – HH:MM 24-hour time the tap-OUT occurred
+        • journey_action– Free-text description (e.g. 'Bank → Oxford Circus')
+        • charge        – Decimal fare in GBP (e.g. 2.80) – no '£' symbol
+        """
+    ).strip()
+    print(help_text)
+
+
+def write_template_csv(dest_path: str) -> None:
+    """Create a ready-to-fill example CSV at the requested location."""
+    df = pd.DataFrame(EXAMPLE_ROWS, columns=EXAMPLE_SCHEMA)
+    Path(dest_path).parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(dest_path, index=False)
+    print(f"✅  Example CSV written →  {dest_path}")
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Helper functions
+# ───────────────────────────────────────────────────────────────────────────────
+def set_cell_bg(cell, fill_hex: str = "FFFFFF") -> None:
+    """Set table-cell background colour (hex without “#”)."""
+    tc_pr = cell._tc.get_or_add_tcPr()
+    shd = OxmlElement("w:shd")
+    shd.set(qn("w:val"), "clear")
+    shd.set(qn("w:color"), "auto")
+    shd.set(qn("w:fill"), fill_hex)
+    tc_pr.append(shd)
+
+
+def style_run(run, *, name="Helvetica", size=8, bold=False, italic=False) -> None:
+    """Apply font style to a run."""
+    run.font.name = name
+    run.font.size = Pt(size)
+    run.font.bold = bold
+    run.font.italic = italic
+
+
+def build_context(csv_path: str, oyster_card: str) -> dict:
+    """Return a dict ready for Jinja rendering *and* table building."""
+    df = pd.read_csv(csv_path)
+
+    # tidy & sort
+    df["date"] = pd.to_datetime(df["date"])
+    df["date_display"] = df["date"].dt.strftime("%a, %d %B %Y")
+    df["start_time_dt"] = pd.to_datetime(df["start_time"], format="%H:%M")
+    df = df.sort_values(["date", "start_time_dt"], ascending=[False, True])
+
+    grouped, totals = defaultdict(list), {}
+    for date_str, group in df.groupby("date_display"):
+        balance = 0.0
+        for _, row in group.iterrows():
+            charge = float(row["charge"])
+            balance += charge
+            grouped[date_str].append(
+                dict(
+                    start_time=row["start_time"],
+                    end_time=row["end_time"],
+                    journey_action=row["journey_action"],
+                    charge=f"£{charge:.2f}",
+                    balance=f"£{balance:.2f}",
+                )
+            )
+        totals[date_str] = f"£{group['charge'].astype(float).sum():.2f}"
+
+    days = [
+        dict(date=d, daily_total=totals[d], journeys=grouped[d])
+        for d in df["date_display"].drop_duplicates()
+    ]
+
+    return dict(
+        statement_date=datetime.today().strftime("%a, %d %B %Y"),
+        oyster_card=oyster_card,
+        start_date=df["date"].min().strftime("%Y-%m-%d"),
+        end_date=df["date"].max().strftime("%Y-%m-%d"),
+        days=days,
+    )
+
+
+def find_placeholder(doc, tag="<<table>>"):
+    for p in doc.paragraphs:
+        if tag in p.text:
+            return p
+    raise ValueError(f"Placeholder '{tag}' not found.")
+
+
+def build_table(doc, days):
+    HDR_BG, DAY_BG = "E6EFF4", "BEDAE9"
+    placeholder = find_placeholder(doc)
+
+    tbl = doc.add_table(rows=1, cols=4)
+    tbl.style = "Table Grid"
+
+    # header row
+    hdr = tbl.rows[0].cells
+    for col, txt in enumerate(["Date/Time", "Journey/Action", "Charge", "Balance"]):
+        set_cell_bg(hdr[col], HDR_BG)
+        style_run(hdr[col].paragraphs[0].add_run(txt), bold=True)
+
+    # data rows
+    for day in days:
+        # day total
+        r = tbl.add_row().cells
+        for c in r:
+            set_cell_bg(c, DAY_BG)
+        style_run(r[0].paragraphs[0].add_run(day["date"]), bold=True, size=9)
+        style_run(
+            r[3].paragraphs[0].add_run(f"{day['daily_total']} daily total"),
+            bold=True,
+            size=9,
+        )
+        r[3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+        # journeys
+        for j in day["journeys"]:
+            jr = tbl.add_row().cells
+            jr[0].paragraphs[0].add_run(f"{j['start_time']} – {j['end_time']}")
+            jr[1].paragraphs[0].add_run(j["journey_action"])
+            for idx in (2, 3):
+                par = jr[idx].paragraphs[0]
+                par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            jr[2].paragraphs[0].add_run(j["charge"])
+            jr[3].paragraphs[0].add_run(j["balance"])
+
+    # insert before placeholder, then remove placeholder line
+    placeholder._p.addprevious(tbl._tbl)
+    placeholder.clear()
+
+    # Remove empty paragraphs after the table to maintain document formatting
+    # Count the number of rows added to determine how many empty lines to remove
+    total_rows_added = 1  # header row
+    for day in days:
+        total_rows_added += 1  # day total row
+        total_rows_added += len(day["journeys"])  # journey rows
+
+    # Remove empty paragraphs following the table location
+    current_p = placeholder._p.getnext()
+    lines_to_remove = total_rows_added
+    while current_p is not None and lines_to_remove > 0:
+        next_p = current_p.getnext()
+        # Only remove if the paragraph is empty or contains only whitespace
+        if not current_p.text or current_p.text.strip() == "":
+            current_p.getparent().remove(current_p)
+            lines_to_remove -= 1
+        current_p = next_p
+
+
+def convert_to_pdf(docx_path: str, soffice="soffice") -> str | None:
+    """Return PDF path on success, else None (LibreOffice must be present)."""
+    out_dir = Path(docx_path).parent
+    pdf_name = Path(docx_path).with_suffix(".pdf").name
+    pdf_path = out_dir / pdf_name
+    try:
+        subprocess.run(
+            [
+                soffice,
+                "--headless",
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                out_dir,
+                docx_path,
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return str(pdf_path)
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+
+
+def generate(csv: str, template: str, output: str, oyster: str, pdf: bool) -> None:
+    ctx = build_context(csv, oyster)
+    header_ctx = {
+        k: ctx[k] for k in ("statement_date", "oyster_card", "start_date", "end_date")
+    }
+
+    tpl = DocxTemplate(template)
+    tpl.render(header_ctx)  # Jinja pass ①
+    build_table(tpl.docx, ctx["days"])  # programmatic table pass ②
+
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
+    tpl.save(output)
+    print(f"✅ DOCX  ➜  {output}")
+
+    if pdf:
+        pdf_path = convert_to_pdf(output)
+        if pdf_path:
+            print(f"✅ PDF   ➜  {pdf_path}")
+        else:
+            print("ℹ️  PDF conversion skipped (LibreOffice not found).")
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# CLI
+# ───────────────────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    today = datetime.today().strftime("%Y-%m-%d")
+    ap = argparse.ArgumentParser(description="Generate a TFL Journey Statement")
+
+    # One-shot utility flags
+    ap.add_argument(
+        "--schema", action="store_true", help="Print the expected CSV schema and exit"
+    )
+    ap.add_argument(
+        "--template-csv",
+        metavar="DEST",
+        nargs="?",
+        const="tfl_template.csv",
+        help="Write an example CSV template (default: ./tfl_template.csv) and exit",
+    )
+
+    # Core generation flags (validated later)
+    ap.add_argument("--csv", help="CSV file containing journeys")
+    ap.add_argument("--template", help="Word template (.docx)")
+    ap.add_argument(
+        "--output", default=f"tfl_statement-{today}.docx", help="Output DOCX"
+    )
+    ap.add_argument("--oyster", default="072084354215", help="Oyster card number")
+    ap.add_argument(
+        "--pdf", action="store_true", help="Also produce PDF (needs LibreOffice)"
+    )
+    args = ap.parse_args()
+
+    # -------------------------------------------------------------------------
+    # One-shot utility commands
+    # -------------------------------------------------------------------------
+    if args.schema:
+        print_schema()
+        sys.exit(0)
+
+    if args.template_csv is not None:
+        write_template_csv(args.template_csv)
+        sys.exit(0)
+
+    # -------------------------------------------------------------------------
+    # Normal generation mode – ensure required args are present
+    # -------------------------------------------------------------------------
+    if not args.csv or not args.template:
+        ap.error("--csv and --template are required unless --schema or --template-csv is used")
+
+    generate(args.csv, args.template, args.output, args.oyster, args.pdf)

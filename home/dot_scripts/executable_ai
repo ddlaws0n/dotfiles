@@ -1,0 +1,166 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["click", "httpx"]
+# ///
+
+import os
+import sys
+import click
+import httpx
+import json
+from typing import Optional
+
+
+@click.command()
+@click.argument('prompt', nargs=-1, required=False)
+@click.option('--model', default='gpt-4.1-nano-2025-04-14', help='Model to use for the request')
+@click.option('--max-tokens', default=150, help='Maximum tokens in response')
+@click.option('--temperature', default=0.3, help='Response creativity (0.0-1.0)')
+@click.option('--verbose', is_flag=True, help='Show debug information')
+@click.option('--interactive', is_flag=True, help='Interactive mode for follow-up questions')
+@click.version_option(version='1.0.0')
+def ai(prompt, model, max_tokens, temperature, verbose, interactive):
+    """AI assistant for quick terminal queries via OpenRouter API."""
+    
+    # Check for API key
+    api_key = os.getenv('OPENROUTER_API_KEY')
+    if not api_key:
+        click.echo("Error: OPENROUTER_API_KEY environment variable not set", err=True)
+        sys.exit(1)
+    
+    # Handle input sources
+    if not prompt and not sys.stdin.isatty():
+        # Read from pipe
+        prompt_text = sys.stdin.read().strip()
+    elif prompt:
+        # Join multiple arguments
+        prompt_text = ' '.join(prompt)
+    else:
+        click.echo("Error: No prompt provided", err=True)
+        sys.exit(1)
+    
+    if verbose:
+        click.echo(f"Model: {model}", err=True)
+        click.echo(f"Max tokens: {max_tokens}", err=True)
+        click.echo(f"Temperature: {temperature}", err=True)
+        click.echo(f"Prompt: {prompt_text}", err=True)
+        click.echo("", err=True)
+    
+    if interactive:
+        interactive_mode(api_key, model, max_tokens, temperature, verbose, prompt_text)
+    else:
+        response = get_ai_response(api_key, model, max_tokens, temperature, prompt_text, verbose)
+        if response:
+            click.echo(response)
+
+
+def get_ai_response(api_key: str, model: str, max_tokens: int, temperature: float, 
+                   prompt: str, verbose: bool) -> Optional[str]:
+    """Get response from OpenRouter API."""
+    
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/yourusername/ai-cli',  # Optional
+        'X-Title': 'AI CLI Tool',  # Optional
+    }
+    
+    payload = {
+        'model': model,
+        'messages': [
+            {
+                'role': 'user', 
+                'content': prompt
+            }
+        ],
+        'max_tokens': max_tokens,
+        'temperature': temperature,
+        'stream': False
+    }
+    
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(
+                'https://openrouter.ai/api/v1/chat/completions',
+                headers=headers,
+                json=payload
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if verbose:
+                click.echo(f"API Response: {json.dumps(data, indent=2)}", err=True)
+            
+            return data['choices'][0]['message']['content'].strip()
+            
+    except httpx.TimeoutException:
+        click.echo("Error: Request timed out", err=True)
+        return None
+    except httpx.HTTPStatusError as e:
+        click.echo(f"Error: API request failed with status {e.response.status_code}", err=True)
+        if verbose:
+            click.echo(f"Response: {e.response.text}", err=True)
+        return None
+    except Exception as e:
+        click.echo(f"Error: {str(e)}", err=True)
+        return None
+
+
+def interactive_mode(api_key: str, model: str, max_tokens: int, temperature: float, 
+                    verbose: bool, initial_prompt: str):
+    """Interactive mode for follow-up questions."""
+    
+    conversation = [{'role': 'user', 'content': initial_prompt}]
+    
+    # Get initial response
+    response = get_ai_response(api_key, model, max_tokens, temperature, initial_prompt, verbose)
+    if response:
+        click.echo(response)
+        conversation.append({'role': 'assistant', 'content': response})
+    
+    while True:
+        try:
+            follow_up = click.prompt('\nFollow-up', default='', show_default=False)
+            if not follow_up or follow_up.lower() in ['quit', 'exit', 'q']:
+                break
+                
+            conversation.append({'role': 'user', 'content': follow_up})
+            
+            # Get response with conversation context
+            headers = {
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            }
+            
+            payload = {
+                'model': model,
+                'messages': conversation,
+                'max_tokens': max_tokens,
+                'temperature': temperature,
+                'stream': False
+            }
+            
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    headers=headers,
+                    json=payload
+                )
+                response.raise_for_status()
+                data = response.json()
+                ai_response = data['choices'][0]['message']['content'].strip()
+                click.echo(ai_response)
+                conversation.append({'role': 'assistant', 'content': ai_response})
+                
+        except KeyboardInterrupt:
+            click.echo("\nGoodbye!")
+            break
+        except Exception as e:
+            click.echo(f"Error: {str(e)}", err=True)
+
+
+if __name__ == '__main__':
+    ai()

@@ -1,0 +1,570 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "click>=8.0.0",
+#     "rich>=13.0.0",
+#     "gitpython>=3.1.0",
+# ]
+# ///
+"""
+Repository cleanup script - removes common development artifacts with enhanced features
+"""
+import os
+import sys
+import json
+import logging
+import shutil
+import subprocess
+from pathlib import Path
+from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
+
+import git
+from git import Repo, InvalidGitRepositoryError, GitCommandError
+
+import click
+from rich.console import Console
+from rich.progress import Progress, TaskID
+from rich.table import Table
+from rich import print as rprint
+
+VERSION = "1.0.1"
+
+# Status emojis and messages
+STATUS_EMOJIS = {
+    "SCANNING": "🔍",
+    "FOUND": "📁", 
+    "SKIPPING": "⏭️",
+    "REMOVING": "✅",
+    "FAILED": "❌",
+    "WARNING": "⚠️",
+    "SUCCESS": "🎉",
+    "BACKUP": "📦",
+    "INFO": "📊"
+}
+
+# Enhanced cleanup targets with more comprehensive coverage
+CLEANUP_TARGETS = {
+    # Node.js
+    'node_modules': 'Node.js dependencies',
+    '.npm': 'npm cache',
+    '.yarn': 'Yarn cache',
+    'yarn-error.log': 'Yarn error logs',
+    
+    # Python
+    '.venv': 'Python virtual environment',
+    'venv': 'Python virtual environment',
+    '__pycache__': 'Python cache',
+    '.pytest_cache': 'Pytest cache',
+    '.tox': 'Tox testing environments',
+    '.coverage': 'Coverage data',
+    'coverage': 'Test coverage reports',
+    '.mypy_cache': 'MyPy cache',
+    
+    # Build artifacts
+    'target': 'Rust/Java build artifacts',
+    'build': 'Build artifacts',
+    'dist': 'Distribution files',
+    'out': 'Output directories',
+    
+    # Framework caches
+    '.next': 'Next.js build cache',
+    '.nuxt': 'Nuxt.js build cache',
+    '.svelte-kit': 'SvelteKit build cache',
+    
+    # Go
+    'vendor': 'Go vendor directory',
+    
+    # PHP
+    'composer.lock': 'PHP Composer lock artifacts',
+    
+    # Docker
+    '.docker': 'Docker build caches',
+    
+    # OS artifacts
+    '.DS_Store': 'macOS metadata files',
+    'Thumbs.db': 'Windows thumbnail cache',
+    'desktop.ini': 'Windows folder settings',
+    
+    # Other common artifacts
+    'node_modules.bak': 'Backup node_modules',
+    '.sass-cache': 'Sass compilation cache',
+    '.parcel-cache': 'Parcel bundler cache',
+}
+
+console = Console()
+
+class ScanStats:
+    def __init__(self):
+        self.repos_scanned = 0
+        self.repos_skipped = 0
+        self.targets_found = 0
+        self.targets_removed = 0
+        self.space_reclaimed = 0
+        self.failures = 0
+        self.start_time = datetime.now()
+
+    def finish(self):
+        self.end_time = datetime.now()
+        self.duration = self.end_time - self.start_time
+
+def get_enhanced_git_activity(repo_path: Path) -> datetime | None:
+    """Get the most recent git activity across all branches, stashes, and tags using GitPython"""
+    try:
+        repo = Repo(repo_path)
+        activities = []
+        
+        # Check all branches (local and remote)
+        for ref in repo.refs:
+            if hasattr(ref, 'commit'):
+                activities.append(ref.commit.committed_date)
+        
+        # Check stashes
+        try:
+            stash_list = repo.git.stash('list', '--format=%ct')
+            if stash_list.strip():
+                stash_times = [int(t.strip()) for t in stash_list.split('\n') if t.strip()]
+                activities.extend(stash_times)
+        except GitCommandError:
+            pass  # No stashes
+        
+        # Check tags
+        for tag in repo.tags:
+            try:
+                if hasattr(tag, 'commit'):
+                    activities.append(tag.commit.committed_date)
+            except (AttributeError, GitCommandError):
+                pass
+        
+        # Check file modifications in working directory (sample for performance)
+        if repo_path.exists():
+            file_count = 0
+            for item in repo_path.rglob('*'):
+                if item.is_file() and not any(part.startswith('.git') for part in item.parts):
+                    try:
+                        activities.append(int(item.stat().st_mtime))
+                        file_count += 1
+                        # Limit file checking for performance on large repos
+                        if file_count > 1000:
+                            break
+                    except (OSError, PermissionError):
+                        continue
+        
+        return datetime.fromtimestamp(max(activities)) if activities else None
+        
+    except (InvalidGitRepositoryError, GitCommandError, ValueError, OSError) as e:
+        logging.debug(f"Git activity check failed for {repo_path}: {e}")
+        # Fallback to directory modification time
+        try:
+            return datetime.fromtimestamp(repo_path.stat().st_mtime)
+        except OSError:
+            return None
+
+def find_git_repositories(start_path: Path, max_depth: int | None = None) -> list[Path]:
+    """Recursively find all git repositories starting from the given path using os.walk for better performance"""
+    repositories = []
+    
+    try:
+        for root, dirs, files in os.walk(start_path, followlinks=False):  # Don't follow symlinks for security
+            root_path = Path(root)
+            
+            # Security check: skip if path goes outside start_path
+            try:
+                root_path.relative_to(start_path)
+            except ValueError:
+                logging.warning(f"Skipping path outside scan area: {root_path}")
+                continue
+            
+            # Check depth limit
+            if max_depth is not None:
+                try:
+                    relative_path = root_path.relative_to(start_path)
+                    if len(relative_path.parts) >= max_depth:
+                        dirs.clear()  # Don't descend further
+                        continue
+                except ValueError:
+                    continue
+            
+            # Check if this directory is a git repository
+            if ".git" in dirs or ".git" in files:
+                repositories.append(root_path)
+                dirs.clear()  # Don't descend into subdirectories of a git repo
+                continue
+            
+            # Filter out hidden directories and common non-repository directories for performance
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in {'node_modules', '__pycache__', '.tox', 'venv', '.venv', 'target', 'build', 'dist'}]
+            
+    except (OSError, PermissionError) as e:
+        logging.warning(f"Permission denied or error accessing {start_path}: {e}")
+    
+    return repositories
+
+def get_directory_size(path: Path) -> int:
+    """Get the total size of a directory in bytes"""
+    total = 0
+    try:
+        if path.is_file():
+            return path.stat().st_size
+        
+        for item in path.rglob('*'):
+            if item.is_file():
+                try:
+                    total += item.stat().st_size
+                except (OSError, PermissionError):
+                    continue
+    except (OSError, PermissionError):
+        pass
+    return total
+
+def format_size(bytes_size: int) -> str:
+    """Format bytes as human readable string"""
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if bytes_size < 1024.0:
+            return f"{bytes_size:.1f} {unit}"
+        bytes_size /= 1024.0
+    return f"{bytes_size:.1f} TB"
+
+def scan_repository_targets(repo_path: Path, exclude_recent_days: int) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Scan a single repository for cleanup targets"""
+    targets = []
+    local_stats = {
+        'repos_scanned': 1,
+        'repos_skipped': 0,
+        'targets_found': 0
+    }
+    
+    try:
+        # Check if repository has recent activity
+        last_activity = get_enhanced_git_activity(repo_path)
+        cutoff_date = datetime.now() - timedelta(days=exclude_recent_days)
+        
+        if last_activity and last_activity > cutoff_date:
+            console.print(f"{STATUS_EMOJIS['SKIPPING']}  Skipping {repo_path.name} (active within {exclude_recent_days} days)")
+            logging.debug(f"Skipping {repo_path.name}: last activity {last_activity}")
+            local_stats['repos_skipped'] = 1
+            return targets, local_stats
+        
+        # Find cleanup targets in this repository
+        for target_name, description in CLEANUP_TARGETS.items():
+            target_path = repo_path / target_name
+            if target_path.exists():
+                size = get_directory_size(target_path)
+                targets.append({
+                    'path': target_path,
+                    'repo': repo_path.name,
+                    'repo_path': repo_path,
+                    'target': target_name,
+                    'description': description,
+                    'size': size
+                })
+                local_stats['targets_found'] += 1
+                
+    except Exception as e:
+        console.print(f"⚠️  Warning: Could not scan {repo_path.name}: {e}")
+        logging.error(f"Failed to scan repository {repo_path}: {e}")
+    
+    return targets, local_stats
+
+def find_cleanup_targets_parallel(repositories: list[Path], exclude_recent_days: int, max_workers: int | None = None) -> tuple[list[dict[str, Any]], ScanStats]:
+    """Find all cleanup targets in repositories using parallel processing"""
+    stats = ScanStats()
+    all_targets = []
+    
+    with Progress() as progress:
+        task = progress.add_task("Scanning repositories...", total=len(repositories))
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_repo = {
+                executor.submit(scan_repository_targets, repo, exclude_recent_days): repo 
+                for repo in repositories
+            }
+            
+            for future in as_completed(future_to_repo):
+                targets, local_stats = future.result()
+                all_targets.extend(targets)
+                
+                # Aggregate stats from each repository scan
+                stats.repos_scanned += local_stats['repos_scanned']
+                stats.repos_skipped += local_stats['repos_skipped']
+                stats.targets_found += local_stats['targets_found']
+                
+                progress.advance(task)
+    
+    return all_targets, stats
+
+def create_backup_manifest(targets: list[dict[str, Any]], backup_dir: Path) -> dict[str, Any]:
+    """Create a backup manifest for restoration"""
+    manifest = {
+        'created': datetime.now().isoformat(),
+        'backup_dir': str(backup_dir.absolute()),
+        'targets': []
+    }
+    
+    for target in targets:
+        manifest['targets'].append({
+            'original_path': str(target['path']),
+            'repo': target['repo'],
+            'target': target['target'],
+            'size': target['size'],
+            'backed_up': False  # Will be updated during backup process
+        })
+    
+    return manifest
+
+def display_results_json(targets: list[dict[str, Any]], stats: ScanStats):
+    """Display results in JSON format"""
+    results = []
+    for target in targets:
+        results.append({
+            "repository": target['repo'],
+            "path": str(target['path']),
+            "target": target['target'],
+            "description": target['description'],
+            "size": target['size'],
+            "size_formatted": format_size(target['size'])
+        })
+    
+    output = {
+        "stats": {
+            "repos_scanned": stats.repos_scanned,
+            "repos_skipped": stats.repos_skipped,
+            "targets_found": stats.targets_found,
+            "targets_removed": stats.targets_removed,
+            "space_reclaimed": stats.space_reclaimed,
+            "failures": stats.failures,
+            "duration_seconds": stats.duration.total_seconds() if hasattr(stats, 'duration') else 0
+        },
+        "targets": results
+    }
+    
+    print(json.dumps(output, indent=2))
+
+
+def display_results_csv(targets: list[dict[str, Any]]):
+    """Display results in CSV format"""
+    import csv
+    import sys
+    
+    writer = csv.writer(sys.stdout)
+    writer.writerow([
+        'Repository', 'Path', 'Target', 'Description', 'Size_Bytes', 'Size_Formatted'
+    ])
+    
+    for target in targets:
+        writer.writerow([
+            target['repo'],
+            str(target['path']),
+            target['target'],
+            target['description'],
+            target['size'],
+            format_size(target['size'])
+        ])
+
+
+def preview_cleanup(targets: list[dict[str, Any]]) -> bool:
+    """Show what will be cleaned up"""
+    if not targets:
+        rprint("🎉 [green]No cleanup targets found![/green]")
+        return False
+    
+    table = Table(title=f"Found {len(targets)} cleanup targets")
+    table.add_column("Repository", style="cyan")
+    table.add_column("Target", style="yellow")
+    table.add_column("Size", justify="right", style="green")
+    table.add_column("Description", style="dim")
+    
+    total_size = 0
+    for target in sorted(targets, key=lambda x: x['size'], reverse=True):
+        size_str = format_size(target['size'])
+        table.add_row(
+            target['repo'],
+            target['target'],
+            size_str,
+            target['description']
+        )
+        total_size += target['size']
+    
+    console.print(table)
+    rprint(f"\n💾 [bold green]Total space to reclaim: {format_size(total_size)}[/bold green]")
+    return True
+
+def cleanup_targets(targets: list[dict[str, Any]], dry_run: bool = False, backup_dir: Path | None = None, scan_stats: ScanStats | None = None) -> ScanStats:
+    """Remove the cleanup targets with optional backup"""
+    stats = scan_stats if scan_stats else CleanupStats()
+    manifest = None
+    
+    if backup_dir and not dry_run:
+        backup_dir.mkdir(exist_ok=True)
+        manifest = create_backup_manifest(targets, backup_dir)
+    
+    with Progress() as progress:
+        task = progress.add_task("Processing targets...", total=len(targets))
+        
+        for i, target in enumerate(targets):
+            try:
+                if dry_run:
+                    console.print(f"🔍 Would remove: {target['path']}")
+                else:
+                    # Create backup if requested
+                    if backup_dir and manifest:
+                        try:
+                            backup_path = backup_dir / f"{target['repo']}_{target['target']}"
+                            if target['path'].is_dir():
+                                shutil.copytree(target['path'], backup_path)
+                            else:
+                                shutil.copy2(target['path'], backup_path)
+                            manifest['targets'][i]['backed_up'] = True
+                        except Exception as e:
+                            console.print(f"⚠️  Backup failed for {target['path']}: {e}")
+                    
+                    # Remove the target
+                    if target['path'].is_dir():
+                        shutil.rmtree(target['path'])
+                    else:
+                        target['path'].unlink()
+                    
+                    console.print(f"{STATUS_EMOJIS['REMOVING']} Removed: {target['repo']}/{target['target']}")
+                    logging.info(f"Successfully removed {target['path']} ({format_size(target['size'])})")
+                    stats.targets_removed += 1
+                    stats.space_reclaimed += target['size']
+                    
+            except Exception as e:
+                console.print(f"{STATUS_EMOJIS['FAILED']} Failed to remove {target['path']}: {e}")
+                logging.error(f"Failed to remove {target['path']}: {e}")
+                stats.failures += 1
+            
+            progress.advance(task)
+    
+    # Save backup manifest
+    if manifest and backup_dir and not dry_run:
+        manifest_path = backup_dir / 'manifest.json'
+        with open(manifest_path, 'w') as f:
+            json.dump(manifest, f, indent=2)
+        console.print(f"📋 Backup manifest saved to: {manifest_path}")
+    
+    stats.finish()
+    return stats
+
+def display_final_stats(stats: ScanStats):
+    """Display final cleanup statistics"""
+    table = Table(title="Cleanup Statistics")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green")
+    
+    table.add_row("Repositories scanned", str(stats.repos_scanned))
+    table.add_row("Repositories skipped", str(stats.repos_skipped))
+    table.add_row("Targets found", str(stats.targets_found))
+    table.add_row("Targets removed", str(stats.targets_removed))
+    table.add_row("Space reclaimed", format_size(stats.space_reclaimed))
+    table.add_row("Failures", str(stats.failures))
+    table.add_row("Duration", f"{stats.duration.total_seconds():.1f}s")
+    
+    console.print(table)
+
+@click.command()
+@click.argument('scan_path', default='.')
+@click.option('-d', '--days', default=30, help='Exclude repos with activity in last N days (default: 30)')
+@click.option('-Y', '--yes', is_flag=True, help='Skip confirmation and run cleanup')
+@click.option('--dry-run', is_flag=True, help='Show what would be removed without actually removing')
+@click.option('--backup', is_flag=True, help='Create backup before deletion')
+@click.option('-j', '--jobs', default=None, type=int, help='Number of parallel jobs for scanning (default: auto-detect)')
+@click.option('--max-depth', type=int, help='Maximum directory depth to scan (prevents deep recursion)')
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging for debugging')
+@click.option('--format', type=click.Choice(['table', 'json', 'csv']), default='table', help='Output format (default: table)')
+@click.option('--version', is_flag=True, help='Show version and exit')
+def main(scan_path: str, days: int, yes: bool, dry_run: bool, backup: bool, jobs: int | None, max_depth: int | None, verbose: bool, format: str, version: bool):
+    """Clean up development artifacts from repositories
+    
+    SCAN_PATH: Directory to scan for repositories (default: current directory)
+    """
+    # Configure logging
+    log_level = logging.DEBUG if verbose else logging.WARNING
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S'
+    )
+    
+    if version:
+        rprint(f"clean-repos version {VERSION}")
+        return
+    
+    # Validate and resolve scan path with security checks
+    try:
+        scan_path_obj = Path(scan_path).expanduser().resolve(strict=True)
+    except (OSError, RuntimeError) as e:
+        rprint(f"❌ [red]Invalid scan path: {e}[/red]")
+        sys.exit(1)
+    
+    if not scan_path_obj.exists():
+        rprint(f"❌ [red]Scan directory not found: {scan_path_obj}[/red]")
+        sys.exit(1)
+    
+    if not scan_path_obj.is_dir():
+        rprint(f"❌ [red]Scan path must be a directory: {scan_path_obj}[/red]")
+        sys.exit(1)
+    
+    # Check if path is readable
+    try:
+        list(scan_path_obj.iterdir())
+    except PermissionError:
+        rprint(f"❌ [red]Permission denied accessing: {scan_path_obj}[/red]")
+        sys.exit(1)
+    
+    rprint(f"🔍 [blue]Scanning for repositories in: {scan_path_obj}[/blue]")
+    rprint(f"📅 [yellow]Excluding repos active within {days} days[/yellow]")
+    
+    # Find all git repositories
+    repositories = find_git_repositories(scan_path_obj, max_depth)
+    if not repositories:
+        rprint("❌ [red]No git repositories found in the specified path[/red]")
+        sys.exit(1)
+    
+    rprint(f"📁 [green]Found {len(repositories)} repositories[/green]")
+    if max_depth:
+        rprint(f"🔍 [blue]Limited to depth {max_depth}[/blue]")
+    
+    # Find cleanup targets
+    targets, scan_stats = find_cleanup_targets_parallel(repositories, days, jobs)
+    
+    # Handle different output formats
+    if format == "json":
+        scan_stats.finish()
+        display_results_json(targets, scan_stats)
+        return
+    elif format == "csv":
+        if not targets:
+            return
+        display_results_csv(targets)
+        return
+    
+    if not preview_cleanup(targets):
+        return
+    
+    # Setup backup directory if requested
+    backup_dir = None
+    if backup and not dry_run:
+        backup_dir = Path.cwd() / '.backup'
+        rprint(f"📦 [blue]Backup directory: {backup_dir.absolute()}[/blue]")
+    
+    if dry_run:
+        cleanup_stats = cleanup_targets(targets, dry_run=True, scan_stats=scan_stats)
+        rprint("🔍 [yellow]Dry run completed - no files were actually removed[/yellow]")
+    else:
+        if not yes:
+            response = click.prompt("\n❓ Proceed with cleanup? [y/N]", default='n').lower().strip()
+            if response not in ['y', 'yes']:
+                rprint("🚫 [yellow]Cleanup cancelled[/yellow]")
+                return
+        
+        cleanup_stats = cleanup_targets(targets, backup_dir=backup_dir, scan_stats=scan_stats)
+        if cleanup_stats.targets_removed > 0:
+            rprint(f"\n🎉 [green]Successfully completed cleanup![/green]")
+    
+    display_final_stats(cleanup_stats)
+
+if __name__ == '__main__':
+    main()

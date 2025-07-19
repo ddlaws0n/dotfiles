@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") -u <URL> -k <API_KEY> [-q key=value ...]
+Makes a secure GET request with url-encoded query parameters.
+
+  -u, --url     API endpoint URL
+  -k, --key     API key/secret
+  -q, --query   Query parameter in key=value format (repeatable)
+  -h, --help    Show this help
+
+Example:
+  $(basename "$0") \
+    -u "https://api.example.com/items" \
+    -k "mySuperSecretKey" \
+    -q title="Test Task" \
+    -q notes="Created via API" \
+    -q due="2025-05-10T12:00:00Z"
+EOF
+}
+
+# parse flags
+url="" key=""
+declare -a queries
+while (( $# )); do
+  case $1 in
+    -u|--url)   url=$2; shift 2;;
+    -k|--key)   key=$2; shift 2;;
+    -q|--query) queries+=("$2"); shift 2;;
+    -h|--help)  usage; exit;;
+    *) echo "Unknown option: $1" >&2; usage; exit 1;;
+  esac
+done
+
+if [[ -z $url || -z $key ]]; then
+  echo "Error: URL and API key are required." >&2
+  usage
+  exit 1
+fi
+
+# ensure jq is available
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq is required but not installed." >&2
+  exit 1
+fi
+
+# urlencode helper
+urlencode(){ printf '%s' "$1" | jq -sRr @uri; }
+
+# build curl args
+declare -a curl_args=( -s -G -H "Content-Type: application/x-www-form-urlencoded" )
+curl_args+=( --data-urlencode "secret=$(urlencode "$key")" )
+
+for q in "${queries[@]}"; do
+  IFS='=' read -r k v <<<"$q"
+  curl_args+=( --data-urlencode "$(urlencode "$k")=$(urlencode "$v")" )
+done
+
+# perform request
+curl "${curl_args[@]}" "$url"

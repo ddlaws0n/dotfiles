@@ -1,0 +1,166 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "openai-whisper",
+# ]
+# ///
+"""
+Audio transcription CLI utility using OpenAI Whisper
+"""
+
+import argparse
+import os
+import sys
+from pathlib import Path
+import whisper
+import warnings
+
+# Suppress FP16 warning on CPU
+warnings.filterwarnings("ignore", message="FP16 is not supported on CPU")
+
+# Supported audio formats
+AUDIO_EXTENSIONS = {'.mp3', '.mp4', '.m4a', '.wav', '.flac', '.ogg', '.webm', '.opus'}
+
+def get_audio_files(paths):
+    """Collect all audio files from given paths"""
+    audio_files = []
+
+    for path in paths:
+        path = Path(path).resolve()
+
+        if path.is_file():
+            if path.suffix.lower() in AUDIO_EXTENSIONS:
+                audio_files.append(path)
+            else:
+                print(f"Warning: Skipping '{path}' - not a supported audio format", file=sys.stderr)
+        elif path.is_dir():
+            # Recursively find audio files in directory
+            for ext in AUDIO_EXTENSIONS:
+                audio_files.extend(path.rglob(f"*{ext}"))
+        else:
+            print(f"Warning: '{path}' does not exist", file=sys.stderr)
+
+    return sorted(set(audio_files))  # Remove duplicates and sort
+
+def transcribe_file(file_path, model, output_dir=None, verbose=True):
+    """Transcribe a single audio file"""
+    try:
+        if verbose:
+            print(f"Transcribing: {file_path.name}")
+
+        result = model.transcribe(str(file_path))
+
+        # Determine output path
+        if output_dir:
+            output_path = Path(output_dir) / f"{file_path.stem}_transcript.txt"
+        else:
+            output_path = file_path.with_suffix('.txt')
+
+        # Write transcription
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(result["text"].strip())
+
+        if verbose:
+            print(f"  → Saved to: {output_path}")
+
+        return True
+
+    except Exception as e:
+        print(f"Error transcribing '{file_path}': {e}", file=sys.stderr)
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Transcribe audio files using OpenAI Whisper",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  transcribe audio.mp3              # Transcribe single file
+  transcribe .                      # Transcribe all audio files in current directory
+  transcribe ~/recordings -m large  # Use large model for better accuracy
+  transcribe *.m4a -o transcripts/  # Output to specific directory
+        """
+    )
+
+    parser.add_argument(
+        'paths',
+        nargs='+',
+        help='Audio file(s) or directory(s) to transcribe'
+    )
+
+    parser.add_argument(
+        '-m', '--model',
+        default='base',
+        choices=['tiny', 'base', 'small', 'medium', 'large'],
+        help='Whisper model size (default: base)'
+    )
+
+    parser.add_argument(
+        '-o', '--output',
+        help='Output directory for transcriptions (default: same as input file)'
+    )
+
+    parser.add_argument(
+        '-q', '--quiet',
+        action='store_true',
+        help='Suppress progress messages'
+    )
+
+    parser.add_argument(
+        '--list',
+        action='store_true',
+        help='List files that would be transcribed without processing them'
+    )
+
+    args = parser.parse_args()
+
+    # Collect audio files
+    audio_files = get_audio_files(args.paths)
+
+    if not audio_files:
+        print("No audio files found!", file=sys.stderr)
+        return 1
+
+    # List mode
+    if args.list:
+        print(f"Found {len(audio_files)} audio file(s):")
+        for f in audio_files:
+            print(f"  {f}")
+        return 0
+
+    # Create output directory if specified
+    if args.output:
+        os.makedirs(args.output, exist_ok=True)
+
+    # Load model
+    if not args.quiet:
+        print(f"Loading Whisper '{args.model}' model...")
+
+    try:
+        model = whisper.load_model(args.model)
+    except Exception as e:
+        print(f"Failed to load model: {e}", file=sys.stderr)
+        return 1
+
+    # Transcribe files
+    if not args.quiet:
+        print(f"\nTranscribing {len(audio_files)} file(s)...\n")
+
+    success_count = 0
+    for i, file_path in enumerate(audio_files, 1):
+        if not args.quiet and len(audio_files) > 1:
+            print(f"[{i}/{len(audio_files)}]", end=" ")
+
+        if transcribe_file(file_path, model, args.output, verbose=not args.quiet):
+            success_count += 1
+
+    # Summary
+    if not args.quiet:
+        print(f"\nCompleted: {success_count}/{len(audio_files)} files transcribed successfully")
+
+    return 0 if success_count == len(audio_files) else 1
+
+if __name__ == '__main__':
+    sys.exit(main())

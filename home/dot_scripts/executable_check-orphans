@@ -1,0 +1,689 @@
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "click>=8.0.0",
+#     "rich>=13.0.0",
+#     "gitpython>=3.1.0",
+# ]
+# ///
+"""
+Git repository orphan checker - identifies repositories with sync issues and orphaned repos
+"""
+
+import json
+import logging
+import os
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Tuple
+
+import git
+from git import Repo, InvalidGitRepositoryError, GitCommandError
+
+import click
+from rich import print as rprint
+from rich.console import Console
+from rich.progress import Progress
+from rich.table import Table
+
+VERSION = "1.0.0"
+
+console = Console()
+
+# Status emojis and messages
+STATUS_EMOJIS = {
+    "ORPHANED": "🔗",
+    "UNCOMMITTED": "⚠️",
+    "STAGED": "📝",
+    "STASHED": "📦",
+    "UNPUSHED": "⬆️",
+    "BEHIND": "⬇️",
+    "DIVERGED": "🔀",
+    "REMOTE_ERROR": "❌",
+    "CLEAN": "✅",
+}
+
+
+class RepoStatus(Enum):
+    ORPHANED = f"{STATUS_EMOJIS['ORPHANED']} Orphaned"
+    UNCOMMITTED = f"{STATUS_EMOJIS['UNCOMMITTED']} Uncommitted"
+    STAGED = f"{STATUS_EMOJIS['STAGED']} Staged"
+    STASHED = f"{STATUS_EMOJIS['STASHED']} Stashed"
+    UNPUSHED = f"{STATUS_EMOJIS['UNPUSHED']} Unpushed"
+    BEHIND = f"{STATUS_EMOJIS['BEHIND']} Behind"
+    DIVERGED = f"{STATUS_EMOJIS['DIVERGED']} Diverged"
+    REMOTE_ERROR = f"{STATUS_EMOJIS['REMOTE_ERROR']} Remote Error"
+    CLEAN = f"{STATUS_EMOJIS['CLEAN']} Clean"
+
+
+@dataclass
+class RepoInfo:
+    path: Path
+    name: str
+    status: RepoStatus
+    details: str
+    last_activity: datetime | None
+    remotes: list[str]
+    uncommitted_count: int = 0
+    staged_count: int = 0
+    stashed_count: int = 0
+    unpushed_count: int = 0
+    behind_count: int = 0
+
+
+class ScanStats:
+    def __init__(self):
+        self.repos_scanned = 0
+        self.repos_orphaned = 0
+        self.repos_with_issues = 0
+        self.repos_clean = 0
+        self.repos_errors = 0
+        self.start_time = datetime.now()
+
+    def finish(self):
+        self.end_time = datetime.now()
+        self.duration = self.end_time - self.start_time
+
+
+def find_git_repositories(start_path: Path, max_depth: int | None = None) -> list[Path]:
+    """Recursively find all git repositories starting from the given path using os.walk for better performance"""
+    repositories = []
+    
+    try:
+        for root, dirs, files in os.walk(start_path, followlinks=False):  # Don't follow symlinks for security
+            root_path = Path(root)
+            
+            # Security check: skip if path goes outside start_path (shouldn't happen with followlinks=False)
+            try:
+                root_path.relative_to(start_path)
+            except ValueError:
+                logging.warning(f"Skipping path outside scan area: {root_path}")
+                continue
+            
+            # Check depth limit
+            if max_depth is not None:
+                try:
+                    relative_path = root_path.relative_to(start_path)
+                    if len(relative_path.parts) >= max_depth:
+                        dirs.clear()  # Don't descend further
+                        continue
+                except ValueError:
+                    continue
+            
+            # Check if this directory is a git repository
+            if ".git" in dirs or ".git" in files:
+                repositories.append(root_path)
+                dirs.clear()  # Don't descend into subdirectories of a git repo
+                continue
+            
+            # Filter out hidden directories and common non-repository directories for performance
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in {'node_modules', '__pycache__', '.tox', 'venv', '.venv'}]
+            
+    except (OSError, PermissionError) as e:
+        logging.warning(f"Permission denied or error accessing {start_path}: {e}")
+    
+    return repositories
+
+
+def get_git_last_activity(repo_path: Path) -> datetime | None:
+    """Get the most recent git activity across all branches and stashes"""
+    try:
+        repo = Repo(repo_path)
+        activities = []
+
+        # Check all branches (local and remote)
+        for ref in repo.refs:
+            if hasattr(ref, 'commit'):
+                activities.append(ref.commit.committed_date)
+
+        # Check stashes
+        try:
+            for stash in repo.git.stash('list', '--format=%ct').split('\n'):
+                if stash.strip():
+                    activities.append(int(stash.strip()))
+        except GitCommandError:
+            pass  # No stashes
+
+        return datetime.fromtimestamp(max(activities)) if activities else None
+
+    except (InvalidGitRepositoryError, GitCommandError, ValueError, OSError):
+        try:
+            return datetime.fromtimestamp(repo_path.stat().st_mtime)
+        except OSError:
+            return None
+
+
+def get_git_remotes(repo_path: Path) -> list[str]:
+    """Get list of configured remotes"""
+    try:
+        repo = Repo(repo_path)
+        return [remote.name for remote in repo.remotes]
+    except (InvalidGitRepositoryError, GitCommandError):
+        return []
+
+
+def get_working_directory_status(repo_path: Path) -> Tuple[int, int]:
+    """Get counts of uncommitted and staged changes"""
+    try:
+        repo = Repo(repo_path)
+        
+        # Get status in porcelain format
+        status_lines = repo.git.status('--porcelain').split('\n')
+        
+        uncommitted = 0
+        staged = 0
+
+        for line in status_lines:
+            if not line:
+                continue
+
+            # First character is staged, second is working directory
+            if len(line) >= 2:
+                if line[0] != " " and line[0] != "?":
+                    staged += 1
+                if line[1] != " ":
+                    uncommitted += 1
+
+        return uncommitted, staged
+
+    except (InvalidGitRepositoryError, GitCommandError):
+        return 0, 0
+
+
+def get_stash_count(repo_path: Path) -> int:
+    """Get number of stashed changes"""
+    try:
+        repo = Repo(repo_path)
+        stash_list = repo.git.stash('list')
+        return len([line for line in stash_list.split('\n') if line.strip()])
+    except (InvalidGitRepositoryError, GitCommandError):
+        return 0
+
+
+def fetch_all_remotes(repo_path: Path) -> bool:
+    """Fetch from all remotes at once for efficiency"""
+    try:
+        repo = Repo(repo_path)
+        repo.git.fetch('--all')
+        return True
+    except (InvalidGitRepositoryError, GitCommandError) as e:
+        logging.debug(f"Failed to fetch remotes for {repo_path}: {e}")
+        return False
+
+
+def get_branch_sync_status(repo_path: Path, remote_name: str) -> Tuple[int, int]:
+    """Get unpushed and behind counts for all branches with this remote"""
+    try:
+        repo = Repo(repo_path)
+        
+        # Get all local branches that track remotes
+        branch_info = repo.git.for_each_ref(
+            '--format=%(refname:short) %(upstream:short)', 'refs/heads/'
+        )
+
+        total_unpushed = 0
+        total_behind = 0
+
+        for line in branch_info.split('\n'):
+            if not line:
+                continue
+
+            parts = line.split()
+            if len(parts) >= 2:
+                local_branch = parts[0]
+                upstream_branch = parts[1]
+
+                if upstream_branch.startswith(f"{remote_name}/"):
+                    try:
+                        # Count commits ahead (unpushed)
+                        ahead_count = int(repo.git.rev_list(
+                            '--count', f"{upstream_branch}..{local_branch}"
+                        ).strip() or '0')
+                        total_unpushed += ahead_count
+
+                        # Count commits behind
+                        behind_count = int(repo.git.rev_list(
+                            '--count', f"{local_branch}..{upstream_branch}"
+                        ).strip() or '0')
+                        total_behind += behind_count
+                    except GitCommandError:
+                        # Branch might not exist on remote yet
+                        pass
+
+        return total_unpushed, total_behind
+
+    except (InvalidGitRepositoryError, GitCommandError):
+        return 0, 0
+
+
+def analyze_repository(repo_path: Path, fetch: bool = True) -> RepoInfo:
+    """Analyze a single repository for orphan status and sync issues"""
+    repo_name = repo_path.name
+    last_activity = get_git_last_activity(repo_path)
+    remotes = get_git_remotes(repo_path)
+
+    # Initialize repo info
+    repo_info = RepoInfo(
+        path=repo_path,
+        name=repo_name,
+        status=RepoStatus.CLEAN,
+        details="",
+        last_activity=last_activity,
+        remotes=remotes,
+    )
+
+    try:
+        # Check if orphaned (no remotes)
+        if not remotes:
+            repo_info.status = RepoStatus.ORPHANED
+            repo_info.details = "No remotes configured"
+            return repo_info
+
+        # Fetch all remotes at once if requested
+        fetch_success = True
+        if fetch:
+            fetch_success = fetch_all_remotes(repo_path)
+            if not fetch_success:
+                logging.warning(f"Failed to fetch remotes for {repo_path}")
+
+        # Get working directory status
+        uncommitted, staged = get_working_directory_status(repo_path)
+        repo_info.uncommitted_count = uncommitted
+        repo_info.staged_count = staged
+
+        # Get stash count
+        repo_info.stashed_count = get_stash_count(repo_path)
+
+        # Check remote sync status for all remotes
+        total_unpushed = 0
+        total_behind = 0
+        remote_errors = []
+
+        for remote in remotes:
+            try:
+                unpushed, behind = get_branch_sync_status(repo_path, remote)
+                total_unpushed += unpushed
+                total_behind += behind
+            except Exception as e:
+                remote_errors.append(f"{remote}: {str(e)}")
+                logging.debug(f"Error checking sync status for remote {remote} in {repo_path}: {e}")
+
+        repo_info.unpushed_count = total_unpushed
+        repo_info.behind_count = total_behind
+
+        # Determine primary status (priority order)
+        if remote_errors:
+            repo_info.status = RepoStatus.REMOTE_ERROR
+            repo_info.details = f"Remote errors: {', '.join(remote_errors)}"
+        elif not fetch_success:
+            repo_info.status = RepoStatus.REMOTE_ERROR
+            repo_info.details = "Failed to fetch from remotes"
+        elif uncommitted > 0:
+            repo_info.status = RepoStatus.UNCOMMITTED
+            repo_info.details = (
+                f"{uncommitted} uncommitted change{'s' if uncommitted != 1 else ''}"
+            )
+        elif staged > 0:
+            repo_info.status = RepoStatus.STAGED
+            repo_info.details = f"{staged} staged change{'s' if staged != 1 else ''}"
+        elif repo_info.stashed_count > 0:
+            repo_info.status = RepoStatus.STASHED
+            repo_info.details = f"{repo_info.stashed_count} stashed change{'s' if repo_info.stashed_count != 1 else ''}"
+        elif total_unpushed > 0 and total_behind > 0:
+            repo_info.status = RepoStatus.DIVERGED
+            repo_info.details = f"{total_unpushed} ahead, {total_behind} behind"
+        elif total_unpushed > 0:
+            repo_info.status = RepoStatus.UNPUSHED
+            repo_info.details = (
+                f"{total_unpushed} unpushed commit{'s' if total_unpushed != 1 else ''}"
+            )
+        elif total_behind > 0:
+            repo_info.status = RepoStatus.BEHIND
+            repo_info.details = (
+                f"{total_behind} commit{'s' if total_behind != 1 else ''} behind"
+            )
+        else:
+            repo_info.status = RepoStatus.CLEAN
+            repo_info.details = "All branches synced"
+
+    except Exception as e:
+        repo_info.status = RepoStatus.REMOTE_ERROR
+        repo_info.details = f"Analysis error: {str(e)}"
+        logging.error(f"Error analyzing repository {repo_path}: {e}")
+
+    return repo_info
+
+
+def analyze_repositories_parallel(
+    repositories: list[Path], fetch: bool = True, max_workers: int | None = None
+) -> Tuple[list[RepoInfo], ScanStats]:
+    """Analyze all repositories using parallel processing"""
+    # Auto-scale workers based on CPU cores and repository count
+    if max_workers is None:
+        max_workers = min(32, max(1, min(len(repositories), os.cpu_count() or 4)))
+    
+    logging.info(f"Using {max_workers} workers for {len(repositories)} repositories")
+    
+    stats = ScanStats()
+    repo_infos = []
+
+    with Progress() as progress:
+        task = progress.add_task("Analyzing repositories...", total=len(repositories))
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_repo = {
+                executor.submit(analyze_repository, repo, fetch): repo
+                for repo in repositories
+            }
+
+            for future in as_completed(future_to_repo):
+                repo_info = future.result()
+                repo_infos.append(repo_info)
+
+                # Update stats
+                stats.repos_scanned += 1
+                if repo_info.status == RepoStatus.ORPHANED:
+                    stats.repos_orphaned += 1
+                elif repo_info.status == RepoStatus.CLEAN:
+                    stats.repos_clean += 1
+                elif repo_info.status == RepoStatus.REMOTE_ERROR:
+                    stats.repos_errors += 1
+                else:
+                    stats.repos_with_issues += 1
+
+                progress.advance(task)
+
+    return repo_infos, stats
+
+
+def filter_repositories_by_age(repo_infos: list[RepoInfo], min_age_days: int) -> list[RepoInfo]:
+    """Filter repositories by minimum age of last activity"""
+    if min_age_days <= 0:
+        return repo_infos
+    
+    cutoff_date = datetime.now() - timedelta(days=min_age_days)
+    filtered = []
+    
+    for repo in repo_infos:
+        if repo.last_activity is None or repo.last_activity < cutoff_date:
+            filtered.append(repo)
+    
+    return filtered
+
+
+def display_results_csv(repo_infos: list[RepoInfo]):
+    """Display results in CSV format"""
+    import csv
+    import sys
+    
+    writer = csv.writer(sys.stdout)
+    writer.writerow([
+        'Repository', 'Path', 'Status', 'Details', 'Last Activity', 
+        'Remotes', 'Uncommitted', 'Staged', 'Stashed', 'Unpushed', 'Behind'
+    ])
+    
+    for repo in repo_infos:
+        last_activity_str = repo.last_activity.isoformat() if repo.last_activity else 'Unknown'
+        remotes_str = ','.join(repo.remotes) if repo.remotes else 'None'
+        
+        writer.writerow([
+            repo.name,
+            str(repo.path),
+            repo.status.name.lower(),
+            repo.details,
+            last_activity_str,
+            remotes_str,
+            repo.uncommitted_count,
+            repo.staged_count,
+            repo.stashed_count,
+            repo.unpushed_count,
+            repo.behind_count
+        ])
+
+
+def display_results_table(repo_infos: list[RepoInfo], include_clean: bool = False):
+    """Display results in a formatted table"""
+    # Filter results if needed
+    if not include_clean:
+        repo_infos = [repo for repo in repo_infos if repo.status != RepoStatus.CLEAN]
+
+    if not repo_infos:
+        if include_clean:
+            rprint("🎉 [green]All repositories are clean and synced![/green]")
+        else:
+            rprint(
+                "🎉 [green]No issues found! Use --include-clean to see all repositories.[/green]"
+            )
+        return
+
+    table = Table(title=f"Repository Status Report ({len(repo_infos)} repositories)")
+    table.add_column("Repository", style="cyan", min_width=20)
+    table.add_column("Status", style="bold", min_width=12)
+    table.add_column("Details", style="yellow", min_width=30)
+    table.add_column("Last Activity", style="dim", min_width=12)
+    table.add_column("Remotes", style="green", min_width=8)
+
+    # Sort by status priority, then by name
+    status_priority = {
+        RepoStatus.REMOTE_ERROR: 0,
+        RepoStatus.ORPHANED: 1,
+        RepoStatus.UNCOMMITTED: 2,
+        RepoStatus.STAGED: 3,
+        RepoStatus.DIVERGED: 4,
+        RepoStatus.UNPUSHED: 5,
+        RepoStatus.BEHIND: 6,
+        RepoStatus.STASHED: 7,
+        RepoStatus.CLEAN: 8,
+    }
+
+    sorted_repos = sorted(
+        repo_infos, key=lambda x: (status_priority[x.status], x.name.lower())
+    )
+
+    for repo in sorted_repos:
+        last_activity_str = "Unknown"
+        if repo.last_activity:
+            days_ago = (datetime.now() - repo.last_activity).days
+            if days_ago == 0:
+                last_activity_str = "Today"
+            elif days_ago == 1:
+                last_activity_str = "Yesterday"
+            else:
+                last_activity_str = f"{days_ago}d ago"
+
+        remotes_str = f"{len(repo.remotes)}" if repo.remotes else "None"
+        if repo.remotes:
+            remotes_str += f" ({', '.join(repo.remotes[:2])}{'...' if len(repo.remotes) > 2 else ''})"
+
+        table.add_row(
+            repo.name, repo.status.value, repo.details, last_activity_str, remotes_str
+        )
+
+    console.print(table)
+
+
+def display_summary_stats(stats: ScanStats):
+    """Display summary statistics"""
+    table = Table(title="Summary Statistics")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Count", style="green")
+
+    table.add_row("Repositories scanned", str(stats.repos_scanned))
+    table.add_row("Orphaned repositories", str(stats.repos_orphaned))
+    table.add_row("Repositories with issues", str(stats.repos_with_issues))
+    table.add_row("Clean repositories", str(stats.repos_clean))
+    table.add_row("Repositories with errors", str(stats.repos_errors))
+    table.add_row("Scan duration", f"{stats.duration.total_seconds():.1f}s")
+
+    console.print(table)
+
+
+@click.command()
+@click.argument("scan_path", default=".")
+@click.option(
+    "-j", "--jobs", default=None, type=int, help="Number of parallel jobs for analysis (default: auto-detect)"
+)
+@click.option(
+    "--max-depth",
+    type=int,
+    help="Maximum directory depth to scan (prevents deep recursion)"
+)
+@click.option(
+    "--no-fetch",
+    is_flag=True,
+    help="Skip fetching from remotes (faster but less accurate)",
+)
+@click.option(
+    "--include-clean",
+    is_flag=True,
+    help="Include repositories with no issues in output",
+)
+@click.option(
+    "--format",
+    type=click.Choice(["table", "json", "csv"]),
+    default="table",
+    help="Output format (default: table)",
+)
+@click.option(
+    "--verbose", "-v", 
+    is_flag=True, 
+    help="Enable verbose logging for debugging"
+)
+@click.option(
+    "--min-age",
+    type=int,
+    help="Only report repositories inactive for more than N days"
+)
+@click.option("--version", is_flag=True, help="Show version and exit")
+def main(
+    scan_path: str,
+    jobs: int | None,
+    max_depth: int | None,
+    no_fetch: bool,
+    include_clean: bool,
+    format: str,
+    verbose: bool,
+    min_age: int | None,
+    version: bool,
+):
+    """Check git repositories for orphaned repos and sync issues
+
+    SCAN_PATH: Directory to scan for repositories (default: current directory)
+    """
+    # Configure logging
+    log_level = logging.DEBUG if verbose else logging.WARNING
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S'
+    )
+    
+    if version:
+        rprint(f"check-orphans version {VERSION}")
+        return
+
+    # Validate and resolve scan path with security checks
+    try:
+        scan_path_obj = Path(scan_path).expanduser().resolve(strict=True)
+    except (OSError, RuntimeError) as e:
+        rprint(f"❌ [red]Invalid scan path: {e}[/red]")
+        sys.exit(1)
+    
+    if not scan_path_obj.exists():
+        rprint(f"❌ [red]Scan directory not found: {scan_path_obj}[/red]")
+        sys.exit(1)
+    
+    if not scan_path_obj.is_dir():
+        rprint(f"❌ [red]Scan path must be a directory: {scan_path_obj}[/red]")
+        sys.exit(1)
+    
+    # Check if path is readable
+    try:
+        list(scan_path_obj.iterdir())
+    except PermissionError:
+        rprint(f"❌ [red]Permission denied accessing: {scan_path_obj}[/red]")
+        sys.exit(1)
+
+    rprint(f"🔍 [blue]Scanning for repositories in: {scan_path_obj}[/blue]")
+    if no_fetch:
+        rprint("⚡ [yellow]Fast mode: skipping remote fetch operations[/yellow]")
+
+    # Find all git repositories
+    repositories = find_git_repositories(scan_path_obj, max_depth)
+    if not repositories:
+        rprint("❌ [red]No git repositories found in the specified path[/red]")
+        sys.exit(1)
+
+    rprint(f"📁 [green]Found {len(repositories)} repositories[/green]")
+    if max_depth:
+        rprint(f"🔍 [blue]Limited to depth {max_depth}[/blue]")
+
+    # Analyze repositories
+    repo_infos, stats = analyze_repositories_parallel(
+        repositories, fetch=not no_fetch, max_workers=jobs
+    )
+    stats.finish()
+    
+    # Apply age filter if specified
+    if min_age is not None:
+        original_count = len(repo_infos)
+        repo_infos = filter_repositories_by_age(repo_infos, min_age)
+        filtered_count = len(repo_infos)
+        if filtered_count < original_count:
+            rprint(f"🕒 [yellow]Filtered to {filtered_count} repositories inactive for >{min_age} days[/yellow]")
+
+    # Display results
+    if format == "csv":
+        display_results_csv(repo_infos)
+    elif format == "json":
+        results = []
+        for repo in repo_infos:
+            results.append(
+                {
+                    "name": repo.name,
+                    "path": str(repo.path),
+                    "status": repo.status.name.lower(),
+                    "details": repo.details,
+                    "last_activity": repo.last_activity.isoformat()
+                    if repo.last_activity
+                    else None,
+                    "remotes": repo.remotes,
+                    "counts": {
+                        "uncommitted": repo.uncommitted_count,
+                        "staged": repo.staged_count,
+                        "stashed": repo.stashed_count,
+                        "unpushed": repo.unpushed_count,
+                        "behind": repo.behind_count,
+                    },
+                }
+            )
+
+        output = {
+            "scan_path": str(scan_path_obj),
+            "stats": {
+                "repos_scanned": stats.repos_scanned,
+                "repos_orphaned": stats.repos_orphaned,
+                "repos_with_issues": stats.repos_with_issues,
+                "repos_clean": stats.repos_clean,
+                "repos_errors": stats.repos_errors,
+                "duration_seconds": stats.duration.total_seconds(),
+            },
+            "repositories": results,
+        }
+
+        print(json.dumps(output, indent=2))
+    else:
+        display_results_table(repo_infos, include_clean)
+        rprint()
+        display_summary_stats(stats)
+
+
+if __name__ == "__main__":
+    main()
