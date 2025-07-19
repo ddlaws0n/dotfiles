@@ -46,6 +46,11 @@ export PATH="/Users/dlawson/.codeium/windsurf/bin:$PATH"
 export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
 {{ end }}
 
+{{ if .use_secrets }}
+# OpenRouter API Key
+export OPENROUTER_API_KEY="{{- onepasswordRead .my.openrouter_api_key "my" }}"
+{{ end }}
+
 ## Editor preferences
 
 # Command line editor
