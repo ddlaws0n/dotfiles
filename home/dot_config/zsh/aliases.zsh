@@ -48,6 +48,10 @@ refresh() {
 }
 alias tr="tree -a -C --gitignore"
 
+# Task master
+alias tm='task-master'
+alias taskmaster='task-master'
+
 # Function for flexibility (takes an optional filename) and fallback editor.
 # Usage: scripts [filename_in_scripts_dir]
 # If no filename, opens the ~/.scripts directory (or a file named .scripts) with the editor.
