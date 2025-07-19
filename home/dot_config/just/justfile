@@ -2,3 +2,48 @@
 
 default:
   @just --summary --list-heading "Global recipes:\n"
+
+upgrade-volta-tools:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "Listing all Volta-managed tools..."
+
+    # Get all tool binaries (excluding Node and pnpm which are runtime tools)
+    tool_binaries=$(volta list --format plain | grep -A 100 "Tool binaries available:" | grep -E "^\s+" | sed 's/^[[:space:]]*//' | grep -v "^$" | cut -d' ' -f1 | grep -v "^(default)$" | sort -u)
+
+    # Get runtime tools (Node, pnpm, etc.)
+    runtime_tools=$(volta list --format plain | grep -E "^\s*(Node|npm|yarn|pnpm):" | sed 's/:.*$//' | sed 's/^[[:space:]]*//' | tr '[:upper:]' '[:lower:]')
+
+    # Combine all tools
+    all_tools=$(echo -e "$runtime_tools\n$tool_binaries" | grep -v "^$" | sort -u)
+
+    if [ -z "$all_tools" ]; then
+        echo "No Volta-managed tools found."
+        exit 0
+    fi
+
+    echo "Found tools to upgrade:"
+    echo "$all_tools" | sed 's/^/  - /'
+    echo ""
+    echo "Upgrading tools to latest versions..."
+
+    # Upgrade each tool
+    echo "$all_tools" | while read -r tool; do
+        if [ -n "$tool" ]; then
+            echo "Upgrading $tool..."
+            if volta install "$tool@latest" 2>/tmp/volta_error.log; then
+                new_version=$(volta list --format plain | grep "^$tool" | awk '{print $2}' || echo "unknown")
+                echo "✓ $tool upgraded to version $new_version"
+            else
+                echo "⚠ Failed to upgrade $tool (may not support @latest or already latest)"
+                echo "  Error: $(cat /tmp/volta_error.log)"
+            fi
+        fi
+    done
+
+    echo ""
+    echo "All tools upgrade process completed!"
+    echo ""
+    echo "Current tool status:"
+    volta list
