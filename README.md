@@ -2,21 +2,33 @@
 
 My personal and work-related dotfiles. managed via [chezmoi](https://github.com/twpayne/chezmoi)
 
-## Todo
+## Key Technologies & Tools
 
-- [ ] Add MacOS defaults
-- [ ] Add wallpapers
-- [ ] Add custom scripts
-- [ ] Add 1Password integration
-- [ ] Add configuration details
-- [ ] Setup script for MacOS
-  - [ ] Symlink vscode settings
-  - [ ] Symlink vscode projects manager
-  - [ ] Symlink roocode settings (~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings)
-- [ ] gh install ~/.config/gmailctl
-- [ ] setup projects/ dir with structure
+- **Configuration Management**: Chezmoi v2.x
+- **Secret Management**: 1Password CLI (`op`)
+- **Package Management**: Homebrew, fnm (Node), uv (Python)
+- **Shell**: Zsh with Zinit, Starship prompt
+- **Primary Editor**: VS Code with 50+ extensions
+- **Secondary Editors**: Windsurf, Roocode (both with MCP integrations)
+- **Development Languages**: Python 3.12+, Go, TypeScript/JavaScript
 
----
+## Project Structure
+
+```
+.
+├── home/                          # All dotfiles with chezmoi naming
+│   ├── .chezmoi.toml.tmpl        # Main chezmoi config template
+│   ├── .chezmoidata/             # Static data files
+│   │   └── onepassword.toml      # 1Password secret mappings
+│   ├── .chezmoitemplates/        # Reusable templates (currently empty)
+│   ├── dot_config/               # XDG config files
+│   ├── dot_scripts/              # Executable utility scripts
+│   └── dot_zprofile.tmpl         # Zsh profile with secrets
+├── scripts/                       # Setup and installation scripts
+├── tests/                        # Test scripts (to be created)
+├── README.md                     # Basic documentation
+└── REFACTOR.md                   # Detailed refactoring plan
+```
 
 ## Setup Instructions ⚡
 
