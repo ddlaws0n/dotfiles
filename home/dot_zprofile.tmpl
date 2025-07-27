@@ -49,6 +49,8 @@ export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
 {{ if .use_secrets }}
 # OpenRouter API Key
 export OPENROUTER_API_KEY="{{- onepasswordRead .my.openrouter_api_key "my" }}"
+# Firecrawl API Key
+export FIRECRAWL_API_KEY="{{- onepasswordRead .my.firecrawl_api_key "my" }}"
 {{ end }}
 
 ## Editor preferences
