@@ -1,0 +1,42 @@
+# =============================================================================
+# ZSH CONFIGURATION
+# =============================================================================
+# Main zsh configuration file that loads all plugins, completions, and tools
+# using antidote plugin manager with separation of concerns strategy.
+
+# Ensure ZDOTDIR is set (fallback if .zprofile hasn't loaded yet)
+export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
+
+# Load all configuration files from $ZDOTDIR
+# Note: ZDOTDIR is set in .zprofile to $XDG_CONFIG_HOME/zsh
+for config_file ("$ZDOTDIR"/*.zsh); do
+  [[ -r "$config_file" ]] && source "$config_file"
+done
+
+# =============================================================================
+# EXTERNAL INTEGRATIONS
+# =============================================================================
+
+# 1Password shell plugins
+[[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
+
+# pnpm path configuration
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# =============================================================================
+# PROMPT INITIALIZATION  
+# =============================================================================
+
+# Initialize starship prompt (installed via Homebrew)
+eval "$(starship init zsh)"
+
+# =============================================================================
+# COMPLETION FINALIZATION
+# =============================================================================
+
+# Final completion setup (after all plugins are loaded)
+autoload -Uz compinit
+compinit

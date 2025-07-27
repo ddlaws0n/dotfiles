@@ -6,11 +6,22 @@ My personal and work-related dotfiles. managed via [chezmoi](https://github.com/
 
 - **Configuration Management**: Chezmoi v2.x
 - **Secret Management**: 1Password CLI (`op`)
-- **Package Management**: Homebrew, fnm (Node), uv (Python)
-- **Shell**: Zsh with Zinit, Starship prompt
+- **Package Management**: Homebrew (system tools), mise (runtimes), antidote (shell plugins)
+- **Shell**: Zsh with antidote, Starship prompt
 - **Primary Editor**: VS Code with 50+ extensions
 - **Secondary Editors**: Windsurf, Roocode (both with MCP integrations)
 - **Development Languages**: Python 3.12+, Go, TypeScript/JavaScript
+
+## Tool Management Philosophy
+
+This dotfiles setup uses a **separation of concerns** approach:
+
+- 🏠 **Homebrew**: System tools, GUI apps, core dependencies
+- 🔧 **mise**: Development runtimes & version-managed tools (Node, Python, Go)
+- 🚀 **antidote**: Shell plugins, themes, completions (fast startup)
+- ⭐ **Starship**: Cross-shell prompt with Git integration
+
+Benefits: Fast shell startup, clear responsibilities, easy maintenance.
 
 ## Project Structure
 

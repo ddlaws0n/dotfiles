@@ -1,37 +1,58 @@
-# Initialize zinit
-source $HOMEBREW_PREFIX/opt/zinit/zinit.zsh
+# =============================================================================
+# ANTIDOTE PLUGIN MANAGER CONFIGURATION
+# =============================================================================
+# This file configures antidote for managing zsh plugins, themes, and 
+# shell-integrated CLI tools from GitHub releases.
 
-# Load plugins with lazy loading for better startup time
-zinit ice wait lucid
-zinit light zdharma-continuum/fast-syntax-highlighting
+# Plugin file paths
+zsh_plugins=${ZDOTDIR:-$HOME}/.zsh_plugins
 
-zinit ice wait lucid
-zinit light zsh-users/zsh-autosuggestions
+# Ensure plugins file exists
+[[ -f ${zsh_plugins}.txt ]] || touch ${zsh_plugins}.txt
 
-zinit ice wait lucid
-zinit light Aloxaf/fzf-tab
+# Source antidote (installed via Homebrew)
+source /opt/homebrew/share/antidote/antidote.zsh
 
-zinit ice wait lucid
-zinit light sharkdp/bat
+# Generate static plugin file when bundle file is newer
+if [[ ! ${zsh_plugins}.zsh -nt ${zsh_plugins}.txt ]]; then
+  echo "Generating antidote plugin cache..."
+  antidote bundle <${zsh_plugins}.txt >${zsh_plugins}.zsh
+fi
 
-zinit ice wait lucid
-zinit light MichaelAquilina/zsh-you-should-use
+# Source the generated static plugin file
+source ${zsh_plugins}.zsh
 
-zinit ice wait lucid
-zinit snippet OMZ::plugins/git/git.plugin.zsh
-
-zinit ice wait lucid
-zinit snippet OMZ::plugins/terraform/terraform.plugin.zsh
+# =============================================================================
+# PLUGIN CONFIGURATION
+# =============================================================================
 
 # fzf-tab configuration
-zstyle ':completion:*' fzf-tab true
-zstyle ':completion:*' fzf-tab-bin-paths "$HOMEBREW_PREFIX/bin"
-zstyle ':completion:*' fzf-tab-bin-paths "$HOMEBREW_PREFIX/sbin"
-zstyle ':completion:*' fzf-tab-bin-paths "$HOMEBREW_PREFIX/opt/fzf/bin"
-zstyle ':completion:*' fzf-tab-bin-paths "$HOMEBREW_PREFIX/opt/fzf/sbin"
+zstyle ':completion:*' fzf-tab-command fzf
+zstyle ':fzf-tab:complete:*' fzf-bindings 'tab:accept'
+zstyle ':fzf-tab:*' single-group prefix
 
-# fzf integration
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# Make autosuggestions more visible
+# Autosuggestions styling
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=60"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# You-should-use configuration
+export YSU_MESSAGE_POSITION="after"
+export YSU_HARDCORE=1
+
+# =============================================================================
+# CLI TOOL CONFIGURATION
+# =============================================================================
+# Note: Antidote doesn't automatically download GitHub release binaries like zinit
+# For now, we'll install CLI tools via Homebrew and focus antidote on shell plugins only
+
+# =============================================================================
+# COMPLETION SETUP
+# =============================================================================
+
+# Ensure completion functions are loaded
+autoload -Uz compinit
+compinit
+
+# Setup completion styles
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'

@@ -1,7 +1,15 @@
-# Better defaults
-alias ls='ls -G'
-alias ll='ls -lh'
-alias la='ls -lah'
+# Better defaults - use eza instead of ls when available
+if command -v eza &> /dev/null; then
+    alias ls='eza --color=always --group-directories-first'
+    alias ll='eza -lh --color=always --group-directories-first'
+    alias la='eza -lah --color=always --group-directories-first'
+    alias lt='eza --tree --color=always --group-directories-first'
+    alias tree='eza --tree --color=always --group-directories-first'
+else
+    alias ls='ls -G'
+    alias ll='ls -lh'
+    alias la='ls -lah'
+fi
 alias grep='grep --color=always'
 alias cp='cp -iv'
 alias mv='mv -iv'
@@ -46,7 +54,22 @@ alias cz="chezmoi"
 refresh() {
     source ~/.zshrc
 }
-alias tr="tree -a -C --gitignore"
+# Tree aliases based on available tools
+if command -v eza &> /dev/null; then
+    alias tr="eza --tree --git-ignore --color=always --group-directories-first"
+else
+    alias tr="tree -a -C --gitignore"
+fi
+
+# New tools from your Brewfile
+alias cat='bat --style=auto'
+alias find='tre-command'
+alias top='usage'
+
+# Additional useful aliases for new tools
+alias llm='ollama'
+alias act='act --container-architecture linux/amd64'  # GitHub Actions local testing
+alias mise-activate='eval "$(mise activate zsh)"'
 
 # Task master
 alias tm='task-master'
