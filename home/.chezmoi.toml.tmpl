@@ -6,12 +6,12 @@
 [data]
     git_name         = 'David D Lawson'
     gh_user          = "ddlaws0n"
-    git_dir          = "{{ .chezmoi.homeDir }}/{{ $git_dir }}"
+    git_dir          = "{{ .chezmoi.homeDir }}{{ $git_dir }}"
     use_secrets      = {{ $use_secrets }}
     is_ci_workflow   = {{ $is_ci_workflow }}
     work_computer    = {{ if $work_computer }}true{{ else }}false{{ end }}
     {{ if $work_computer -}}
-    git_workdir      = "{{ .chezmoi.homeDir }}/{{ $git_dir }}/work"
+    git_workdir      = "{{ .chezmoi.homeDir }}{{ $git_dir }}/work"
     {{- end }}
 
 
