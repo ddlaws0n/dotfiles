@@ -20,11 +20,8 @@ done
 # 1Password shell plugins
 [[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
 
-# pnpm path configuration
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+# pnpm path configuration (handled by path-optimization.zsh)
+# Note: PATH management is now centralized for better performance
 
 # =============================================================================
 # PROMPT INITIALIZATION  
@@ -37,6 +34,5 @@ eval "$(starship init zsh)"
 # COMPLETION FINALIZATION
 # =============================================================================
 
-# Final completion setup (after all plugins are loaded)
-autoload -Uz compinit
-compinit
+# Note: compinit is handled by mattmc3/ez-compinit plugin loaded via antidote
+# No additional compinit call needed here

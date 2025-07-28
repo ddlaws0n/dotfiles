@@ -1,9 +1,17 @@
-# Faster compinit
-autoload -Uz compinit
-if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
+# =============================================================================
+# COMPLETION CACHE OPTIMIZATION
+# =============================================================================
+# Note: Primary compinit is handled by mattmc3/ez-compinit plugin
+# This provides fallback and cache optimization for additional completions
+
+# Only run compinit if ez-compinit hasn't already done it
+if [[ -z "$_comps[zstyle]" ]]; then
+  autoload -Uz compinit
+  if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+    compinit -d "${ZDOTDIR}/.zcompdump"
+  else
+    compinit -C -d "${ZDOTDIR}/.zcompdump"
+  fi
 fi
 
 zstyle ':completion:*' menu select
@@ -24,39 +32,19 @@ fpath=(
   $fpath
 )
 
-# Generate completions for tools that support it
-if command -v gh &> /dev/null; then
-  eval "$(gh completion -s zsh)"
-fi
+# =============================================================================
+# OPTIMIZED COMPLETION LOADING
+# =============================================================================
 
-if command -v fnm &> /dev/null; then
-  eval "$(fnm completions --shell zsh)"
-fi
-
-if command -v uv &> /dev/null; then
-  eval "$(uv generate-shell-completion zsh)"
-fi
-
-if command -v op &> /dev/null; then
-  eval "$(op completion zsh)"
-fi
-
-# Bun completions (if available)
+# Load immediate completions (fast tools only)
 if command -v bun &> /dev/null && [[ -f "$BUN_INSTALL/_bun" ]]; then
   source "$BUN_INSTALL/_bun"
 fi
 
-# Starship completions (prompt tool)
-if command -v starship &> /dev/null; then
-  eval "$(starship completions zsh)"
+# Terraform completion (already optimized)
+if command -v terraform &> /dev/null; then
+  complete -o nospace -C /opt/homebrew/bin/terraform terraform
 fi
 
-# Turso completions (database CLI)
-if command -v turso &> /dev/null; then
-  eval "$(turso completion zsh)"
-fi
-
-# Additional completions for tools in Brewfile
-if command -v mise &> /dev/null; then
-  eval "$(mise activate zsh)"
-fi
+# Note: Expensive completion generators (gh, fnm, uv, op, starship, turso, mise)
+# are now handled by lazy-completions.zsh for optimal startup performance

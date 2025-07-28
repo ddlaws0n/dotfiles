@@ -1,0 +1,225 @@
+---
+name: 'Automated Testing Suite'
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/tests.yml'
+      - 'home/**'
+    branches:
+      - master
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - '.github/workflows/tests.yml'
+      - 'home/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-dotfiles:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ['macos-latest']
+        # Uncomment below to test on multiple OS
+        # os: ['ubuntu-latest', 'macos-latest']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up environment variables
+        run: |
+          # Set home directory based on OS
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            HOME_DIR="/Users/runner"
+          else
+            HOME_DIR="/home/runner"
+          fi
+
+          echo "HOME_DIR=${HOME_DIR}" >> $GITHUB_ENV
+          echo "CHEZMOI_DIR=${HOME_DIR}/.local/share/chezmoi" >> $GITHUB_ENV
+          echo "CHEZMOI_CONFIG_DIR=${HOME_DIR}/.config/chezmoi" >> $GITHUB_ENV
+          echo "CHEZMOI_BIN=${HOME_DIR}/bin/chezmoi" >> $GITHUB_ENV
+
+      - name: Copy repository to home directory
+        run: |
+          set -e
+          mkdir -p "${CHEZMOI_DIR}"
+          cp -a . "${CHEZMOI_DIR}"
+
+      - name: Create chezmoi config file
+        run: |
+          set -e
+          # Create config in root user's directory where chezmoi actually looks for it
+          sudo mkdir -p /root/.config/chezmoi
+
+          sudo tee /root/.config/chezmoi/chezmoi.toml > /dev/null << EOF
+          [data]
+              git_name         = 'Test User'
+              gh_user          = "${{ github.repository_owner }}"
+              git_dir          = "${HOME_DIR}/repos"
+              use_secrets      = false
+              is_ci_workflow   = true
+              work_computer    = false
+              xdgCacheDir      = "${HOME_DIR}/.cache"
+              xdgConfigDir     = "${HOME_DIR}/.config"
+              xdgDataDir       = "${HOME_DIR}/.local/share"
+              xdgStateDir      = "${HOME_DIR}/.local/state"
+          EOF
+
+          echo "=== DEBUG: Config file created ==="
+          echo "Config file path: /root/.config/chezmoi/chezmoi.toml"
+          echo "Config file contents:"
+          sudo cat /root/.config/chezmoi/chezmoi.toml
+          echo "=== END DEBUG ==="
+
+      - name: Install chezmoi
+        run: |
+          set -e
+          mkdir -p "${HOME_DIR}/bin"
+          cd "${HOME_DIR}"
+
+          # Download and install chezmoi
+          if ! sh -c "$(curl -fsLS get.chezmoi.io)"; then
+            echo "Failed to install chezmoi"
+            exit 1
+          fi
+
+          # Verify installation
+          if [ ! -f "${CHEZMOI_BIN}" ]; then
+            echo "chezmoi binary not found at expected location: ${CHEZMOI_BIN}"
+            exit 1
+          fi
+
+      - name: Run chezmoi apply
+        run: |
+          set -e
+          cd "${HOME_DIR}"
+
+          echo "=== DEBUG: Before chezmoi apply ==="
+          echo "Current working directory: $(pwd)"
+          echo "Chezmoi config directory: ${CHEZMOI_CONFIG_DIR}"
+          echo "Chezmoi source directory: ${CHEZMOI_DIR}"
+          echo "Config file exists: $(test -f "${CHEZMOI_CONFIG_DIR}/chezmoi.toml" && echo "YES" || echo "NO")"
+
+          if [ -f "${CHEZMOI_CONFIG_DIR}/chezmoi.toml" ]; then
+            echo "Config file contents:"
+            cat "${CHEZMOI_CONFIG_DIR}/chezmoi.toml"
+          fi
+
+          echo "=== DEBUG: Chezmoi data command ==="
+          "${CHEZMOI_BIN}" data --source "${CHEZMOI_DIR}" || echo "Failed to get chezmoi data"
+
+          echo "=== DEBUG: Starting chezmoi apply ==="
+          "${CHEZMOI_BIN}" apply --source "${CHEZMOI_DIR}" --verbose
+
+      - name: Verify dotfiles installation
+        run: |
+          set -e
+          cd "${HOME_DIR}"
+
+          echo "------- Testing files -------"
+
+          # Define expected files based on OS
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            existing_files=(
+              .zshrc
+              .gitconfig
+              .gitignore
+              .zprofile
+              .config/starship.toml
+              .config/zsh/aliases.zsh
+              .config/zsh/completion.zsh
+              .config/zsh/functions.zsh
+              .config/zsh/history.zsh
+              .config/zsh/plugins.zsh
+              .config/ghostty/config
+              .config/homebrew/Brewfile
+              .ssh/config
+            )
+            missing_files=()
+
+            # Check for packages that should be available
+            installed_commands=(
+              git
+              zsh
+            )
+          else
+            # Linux-specific files (if you expand to Linux)
+            existing_files=(
+              .zshrc
+              .gitconfig
+              .gitignore
+              .zprofile
+              .config/starship.toml
+              .ssh/config
+            )
+            missing_files=()
+            installed_commands=(
+              git
+              zsh
+            )
+          fi
+
+          # Verify files exist
+          echo "Checking for required files..."
+          for file in "${existing_files[@]}"; do
+            if [ ! -e "${HOME_DIR}/${file}" ]; then
+              echo "❌ Required file not found: ${file}"
+              exit 1
+            else
+              echo "✅ Found: ${file}"
+            fi
+          done
+
+          # Verify files don't exist (OS-specific exclusions)
+          if [ ${#missing_files[@]} -gt 0 ]; then
+            echo "Checking for files that should not exist..."
+            for file in "${missing_files[@]}"; do
+              if [ -e "${HOME_DIR}/${file}" ]; then
+                echo "❌ Unexpected file found: ${file}"
+                exit 1
+              else
+                echo "✅ Correctly absent: ${file}"
+              fi
+            done
+          fi
+
+          # Verify commands are available
+          echo "Checking for required commands..."
+          for command in "${installed_commands[@]}"; do
+            if ! command -v "$command" >/dev/null 2>&1; then
+              echo "❌ Command not found: $command"
+              exit 1
+            else
+              echo "✅ Found command: $command"
+            fi
+          done
+
+          echo "🎉 All tests passed!"
+
+      - name: Debug information (on failure)
+        if: failure()
+        run: |
+          echo "=== Debug Information ==="
+          echo "Home directory contents:"
+          ls -la "${HOME_DIR}" || true
+          echo ""
+          echo "Config directory contents:"
+          ls -la "${HOME_DIR}/.config" || true
+          echo ""
+          echo "Chezmoi directory contents:"
+          ls -la "${CHEZMOI_DIR}" || true
+          echo ""
+          echo "Environment variables:"
+          env | grep -E "(HOME_DIR|CHEZMOI)" || true

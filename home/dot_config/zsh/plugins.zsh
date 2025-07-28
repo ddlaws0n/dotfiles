@@ -49,10 +49,7 @@ export YSU_HARDCORE=1
 # COMPLETION SETUP
 # =============================================================================
 
-# Ensure completion functions are loaded
-autoload -Uz compinit
-compinit
-
-# Setup completion styles
+# Note: compinit is handled by mattmc3/ez-compinit plugin for optimal performance
+# Setup completion styles only
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'

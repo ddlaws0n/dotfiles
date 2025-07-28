@@ -1,0 +1,20 @@
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
+npm.bun                             = true
+
+[tools]
+# Languages, runtimes, and package managers
+bun  = "latest"
+go   = "latest"
+node = "lts"
+pnpm = "latest"
+uv   = "latest"
+
+# Packages
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@google/gemini-cli"        = "latest"
+"npm:repomix"                   = "latest"
+"npm:task-master-ai"            = "latest"
+
+[env]
+_.path = ['{{config_root}}/node_modules/.bin']

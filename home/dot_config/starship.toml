@@ -25,6 +25,7 @@ $python\
 $package\
 $docker_context\
 $kubernetes\
+$terraform\
 $shell\
 $container\
 $jobs\
@@ -279,6 +280,12 @@ format = '( [$symbol( $context)]($style) )'
 symbol = "󱃾"
 style = "fg:color_kubernetes"
 format = '( [($symbol( $cluster))]($style) )'
+disabled = false
+
+[terraform]
+symbol = "󱁢"
+style = "fg:color_env"
+format = '( [$symbol( $workspace)]($style) )'
 disabled = false
 
 [shell]

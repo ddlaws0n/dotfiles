@@ -6,46 +6,48 @@
 # management are handled by Homebrew and mise respectively.
 
 # =============================================================================
-# CORE COMPLETIONS & INITIALIZATION
+# CORE COMPLETIONS & INITIALIZATION (HIGHEST PRIORITY)
 # =============================================================================
 
-# Essential completion setup
+# Essential completion setup (load first for optimal caching)
 mattmc3/ez-compinit
 zsh-users/zsh-completions kind:fpath path:src
 
 # =============================================================================
-# SHELL ENHANCEMENTS (DEFERRED FOR PERFORMANCE)
+# SHELL ENHANCEMENTS (OPTIMIZED LOADING ORDER)
 # =============================================================================
 
-# Syntax highlighting and autosuggestions
+# Load syntax highlighting early but deferred (most impactful for UX)
 zdharma-continuum/fast-syntax-highlighting kind:defer
+
+# Autosuggestions (frequently used, load second)
 zsh-users/zsh-autosuggestions kind:defer
 
-# Better tab completion with fzf integration
+# FZF tab completion (heavy but very useful, load third)
 Aloxaf/fzf-tab kind:defer
 
-# Command usage suggestions
+# Usage suggestions (least critical, load last)
 MichaelAquilina/zsh-you-should-use kind:defer
 
 # =============================================================================
-# OH-MY-ZSH PLUGINS
+# OH-MY-ZSH PLUGINS (MINIMAL ESSENTIAL SET)
 # =============================================================================
 
-# Git aliases and functions
+# Git aliases and functions (most frequently used)
 ohmyzsh/ohmyzsh path:plugins/git
 
-# Development tool completions
+# Development tool completions (lightweight)
 ohmyzsh/ohmyzsh path:plugins/terraform
 ohmyzsh/ohmyzsh path:plugins/kubectl
 
-# System utilities
+# System utilities (only if actually used)
 ohmyzsh/ohmyzsh path:plugins/command-not-found
 
 # =============================================================================
 # SHELL INTEGRATIONS
 # =============================================================================
 
-# Note: CLI tools (fzf, bat, ripgrep, git-delta, gh, jq) are now managed via Homebrew
+# Note: CLI tools (fzf, bat, ripgrep, git-delta, gh, jq) are managed via Homebrew
 # Antidote focuses on shell plugins, themes, and completions for better reliability
 
 # =============================================================================
