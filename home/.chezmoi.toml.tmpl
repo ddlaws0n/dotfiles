@@ -2,6 +2,10 @@
 {{- $git_dir := promptStringOnce . "git_dir" "Git directory where your projects are located (e.g. code):" -}}
 {{- $work_computer := promptBoolOnce . "work_computer" "Is this a work computer for daily driving? (true/false)" -}}
 {{- $is_ci_workflow := promptBoolOnce . "is_ci_workflow" "Is this a CI workflow? (true/false)" -}}
+{{- $personal_1p_account := promptStringOnce . "personal_1p_account" "Personal 1Password account (email or short name):" -}}
+{{- $work_1p_account := promptStringOnce . "work_1p_account" "Work 1Password account (email or short name):" -}}
+{{- $personal_vault_name := promptStringOnce . "personal_vault_name" "Personal 1Password vault name:" -}}
+{{- $work_vault_name := promptStringOnce . "work_vault_name" "Work 1Password vault name:" -}}
 
 [data]
     git_name         = 'David D Lawson'
@@ -12,6 +16,12 @@
     work_computer    = {{ if $work_computer }}true{{ else }}false{{ end }}
     {{ if $work_computer -}}
     git_workdir      = "{{ .chezmoi.homeDir }}/{{ $git_dir }}/work"
+    {{- end }}
+    {{ if $use_secrets -}}
+    personal_1p_account = {{ $personal_1p_account | quote }}
+    work_1p_account     = {{ $work_1p_account | quote }}
+    personal_vault_name = {{ $personal_vault_name | quote }}
+    work_vault_name     = {{ $work_vault_name | quote }}
     {{- end }}
 
 [edit]
@@ -24,6 +34,11 @@
 [diff]
     pager = "delta"
     exclude = ["scripts"]
+
+{{ if $use_secrets -}}
+[onepassword]
+    mode = "account"
+{{- end }}
 
 [template]
   options = ["missingkey=zero"]

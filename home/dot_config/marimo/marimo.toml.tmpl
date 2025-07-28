@@ -15,16 +15,16 @@ follow_symlink = false
 rules = "Always use type hints, prefer standard library over typing where possible. Use Polar over Pandas."
 
 [ai.google]
-api_key = "{{- onepasswordRead .my.gemini_api_key "my" }}"
+api_key = "{{- onepasswordRead .my.gemini_api_key .personal_1p_account }}"
 
 [ai.anthropic]
-api_key = "{{- onepasswordRead .my.perplexity_api_key "my" }}"
+api_key = "{{- onepasswordRead .my.perplexity_api_key .personal_1p_account }}"
 
 [ai.bedrock]
 
 [ai.open_ai]
 model = "claude-sonnet-4-20250514"
-api_key = "{{- onepasswordRead .my.anthropic_api_key "my" }}"
+api_key = "{{- onepasswordRead .my.anthropic_api_key .personal_1p_account }}"
 {{- end }}
 
 [package_management]
@@ -49,7 +49,7 @@ line_length = 80
 
 {{- if .use_secrets }}
 [completion]
-codeium_api_key = "{{- onepasswordRead .my.windsurf_api_key "my" }}"
+codeium_api_key = "{{- onepasswordRead .my.windsurf_api_key .personal_1p_account }}"
 copilot = "codeium"
 activate_on_typing = true
 {{- end }}
