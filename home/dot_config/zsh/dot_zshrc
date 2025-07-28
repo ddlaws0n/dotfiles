@@ -1,20 +1,56 @@
 # ZSH CONFIGURATION
-# Main zsh configuration file that loads all plugins, completions, and tools
-# using antidote plugin manager with separation of concerns strategy.
+# Main zsh configuration file that loads plugins and configuration files
+# using antidote plugin manager with clean separation of duties.
+
+# Mark that shell is starting (to suppress cd output during startup)
+export _SHELL_STARTING=1
 
 # Ensure ZDOTDIR is set (fallback if .zprofile hasn't loaded yet)
 export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
 
-# Load configuration files in specific order for optimal performance
-# Note: ZDOTDIR is set in .zprofile to $XDG_CONFIG_HOME/zsh
+# ANTIDOTE PLUGIN MANAGER SETUP
 
-# 1. PATH management must load first to set up PATH correctly
-[[ -r "$ZDOTDIR/path.zsh" ]] && source "$ZDOTDIR/path.zsh"
+# Plugin file paths
+zsh_plugins=${ZDOTDIR:-$HOME}/.zsh_plugins
 
-# 2. Load other configuration files
-for config_file ("$ZDOTDIR"/*.zsh); do
-  # Skip already loaded files
-  [[ "$config_file" == *"path.zsh" ]] && continue
+# Ensure plugins file exists
+[[ -f ${zsh_plugins}.txt ]] || touch ${zsh_plugins}.txt
+
+# Source antidote (installed via Homebrew)
+source /opt/homebrew/share/antidote/antidote.zsh
+
+# Generate static plugin file when bundle file is newer
+if [[ ! ${zsh_plugins}.zsh -nt ${zsh_plugins}.txt ]]; then
+  echo "Generating antidote plugin cache..."
+  antidote bundle <${zsh_plugins}.txt >${zsh_plugins}.zsh
+fi
+
+# Source the generated static plugin file
+source ${zsh_plugins}.zsh
+
+# PLUGIN CONFIGURATION
+
+# fzf-tab configuration
+zstyle ':completion:*' fzf-tab-command fzf
+zstyle ':fzf-tab:complete:*' fzf-bindings 'tab:accept'
+zstyle ':fzf-tab:*' single-group prefix
+
+# Autosuggestions styling
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=60"
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# You-should-use configuration
+export YSU_MESSAGE_POSITION="after"
+export YSU_HARDCORE=1
+
+# Completion setup
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+
+# LOAD CONFIGURATION FILES
+
+# Load remaining configuration files (excluding problematic ones)
+for config_file in "$ZDOTDIR"/aliases.zsh "$ZDOTDIR"/history.zsh "$ZDOTDIR"/completions.zsh; do
   [[ -r "$config_file" ]] && source "$config_file"
 done
 
@@ -27,3 +63,11 @@ done
 
 # Initialize starship prompt (installed via Homebrew)
 eval "$(starship init zsh)"
+
+# SHELL BEHAVIOR
+
+# Ensure interactive shells start in home directory
+[[ $- == *i* ]] && cd ~
+
+# Clear startup flag (now cd will show directory contents)
+unset _SHELL_STARTING

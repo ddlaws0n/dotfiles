@@ -1,1 +1,9 @@
 !.vscode/
+
+# Temporary development files (keep untracked)
+.actrc
+REFACTOR.md
+SUMMARY.md
+.github/workflows/WORKFLOW_IMPROVEMENTS.md
+.github/workflows/tests-improved.yml
+.github/workflows/tests.yml
