@@ -57,6 +57,8 @@ _lazy_load_completion() {
       fi
       ;;
     mise)
+      # Note: mise completion is usually handled by mise activate
+      # This is a fallback for cases where completion isn't loaded via activate
       if command -v mise &> /dev/null; then
         mise completion zsh > "$cache_file" 2>/dev/null && source "$cache_file"
       fi

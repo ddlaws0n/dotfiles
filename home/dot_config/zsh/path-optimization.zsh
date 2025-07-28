@@ -105,29 +105,22 @@ setup_homebrew_paths() {
   add_paths_batch start "$brew_prefix/bin" "$brew_prefix/sbin"
 }
 
-# Development tool paths
+# Development tool paths (non-mise managed only)
 setup_dev_tool_paths() {
-  # User local paths
+  # User local paths (always needed)
   add_paths_batch end \
     "$HOME/.scripts" \
     "$HOME/.local/bin"
   
-  # Language-specific paths (only if tools are installed)
-  if path_exists "$HOME/.bun"; then
-    export BUN_INSTALL="$HOME/.bun"
-    add_to_path "$BUN_INSTALL/bin"
-  fi
+  # Note: bun, go, node, pnpm, uv are managed by mise activate
+  # Only add paths for tools NOT managed by mise
   
-  if path_exists "$HOME/go"; then
-    export GOPATH="$HOME/go"
-    add_to_path "$GOPATH/bin"
-  fi
-  
-  # Windsurf (only if installed)
+  # Windsurf (not managed by mise)
   add_to_path "/Users/dlawson/.codeium/windsurf/bin"
   
-  # pnpm (only if needed)
-  if [[ -n "$PNPM_HOME" ]]; then
+  # Legacy pnpm path (if PNPM_HOME is set by non-mise installation)
+  # Note: mise-managed pnpm doesn't need this
+  if [[ -n "$PNPM_HOME" && ! command -v mise &> /dev/null ]]; then
     add_to_path "$PNPM_HOME" start
   fi
 }
