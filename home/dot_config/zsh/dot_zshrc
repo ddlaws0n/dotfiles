@@ -7,9 +7,26 @@
 # Ensure ZDOTDIR is set (fallback if .zprofile hasn't loaded yet)
 export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
 
-# Load all configuration files from $ZDOTDIR
+# Minimal Homebrew PATH setup for critical commands
+# This ensures commands like starship are available immediately
+if [[ -d "/opt/homebrew/bin" ]]; then
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+elif [[ -d "/usr/local/bin" ]]; then
+  export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+fi
+
+# Load configuration files in specific order for optimal performance
 # Note: ZDOTDIR is set in .zprofile to $XDG_CONFIG_HOME/zsh
+
+# 1. PATH optimization must load first to set up PATH correctly
+# Using simplified version to avoid parse errors
+[[ -r "$ZDOTDIR/path-optimization-simple.zsh" ]] && source "$ZDOTDIR/path-optimization-simple.zsh"
+
+# 2. Load other configuration files
 for config_file ("$ZDOTDIR"/*.zsh); do
+  # Skip already loaded files
+  [[ "$config_file" == *"path-optimization.zsh" ]] && continue
+  [[ "$config_file" == *"path-optimization-simple.zsh" ]] && continue
   [[ -r "$config_file" ]] && source "$config_file"
 done
 

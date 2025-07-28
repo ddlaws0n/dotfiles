@@ -3,8 +3,8 @@ if command -v path_helper &> /dev/null; then
   eval "$(/usr/libexec/path_helper -s)"
 fi
 
-{{- /* Include path helpers by defining functions inline */ -}}
-{{- define "homebrewSetup" -}}
+{{/* Include path helpers by defining functions inline */}}
+{{- define "homebrewSetup" }}
 ## Homebrew
 if [[ -d "/opt/homebrew/bin" ]]; then
   export HOMEBREW_PREFIX="/opt/homebrew"
@@ -15,27 +15,27 @@ fi
 if [[ -n "$HOMEBREW_PREFIX" ]]; then
   export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 fi
-{{- end -}}
+{{- end }}
 
-{{- define "xdgPaths" -}}
+{{- define "xdgPaths" }}
 ## XDG Base Directory Specification
 export XDG_CONFIG_HOME="{{ .chezmoi.homeDir }}/.config"
 export XDG_CACHE_HOME="{{ .chezmoi.homeDir }}/.cache"
 export XDG_DATA_HOME="{{ .chezmoi.homeDir }}/.local/share"
 export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
-{{- end -}}
+{{- end }}
 
-{{- define "commonPaths" -}}
+{{- define "commonPaths" }}
 ## Scripts directory
 export PATH="$HOME/.scripts:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-{{- end -}}
+{{- end }}
 
-{{- define "editorPrefs" -}}
+{{- define "editorPrefs" }}
 ## Editor preferences
 export EDITOR="nano"
 export VISUAL="code"
-{{- end -}}
+{{- end }}
 
 {{ template "xdgPaths" . }}
 

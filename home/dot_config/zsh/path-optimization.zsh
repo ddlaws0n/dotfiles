@@ -1,22 +1,25 @@
-# =============================================================================
+#!/usr/bin/env zsh
 # PATH OPTIMIZATION AND DEDUPLICATION
-# =============================================================================
 # This file provides utilities for efficient PATH management to reduce
 # shell startup time by avoiding redundant directory checks and path modifications
 
-# =============================================================================
+# Ensure proper zsh mode
+setopt NO_KSH_ARRAYS
+setopt NO_SH_WORD_SPLIT
+
 # PATH DEDUPLICATION FUNCTIONS
-# =============================================================================
 
 # Fast path deduplication using associative arrays
 dedupe_path() {
-  local -A seen_paths
-  local -a new_path_array
-  local path_element
+  # Declare variables
+  typeset -A seen_paths
+  typeset -a new_path_array
+  typeset path_element
+  typeset IFS=':'
   
   # Convert PATH to array and deduplicate
-  for path_element in ${(s/:/)PATH}; do
-    if [[ -n "$path_element" && -z "${seen_paths[$path_element]}" ]]; then
+  for path_element in $PATH; do
+    if [[ -n "$path_element" ]] && [[ -z "${seen_paths[$path_element]}" ]]; then
       seen_paths[$path_element]=1
       new_path_array+=("$path_element")
     fi
@@ -28,8 +31,8 @@ dedupe_path() {
 
 # Add to PATH only if not already present and directory exists
 add_to_path() {
-  local new_path="$1"
-  local position="${2:-end}"  # 'start' or 'end' (default)
+  typeset new_path="$1"
+  typeset position="${2:-end}"  # 'start' or 'end' (default)
   
   # Skip if path is empty or already in PATH
   [[ -n "$new_path" ]] || return 1
@@ -50,24 +53,22 @@ add_to_path() {
 
 # Batch add multiple paths efficiently
 add_paths_batch() {
-  local position="${1:-end}"
+  typeset position="${1:-end}"
   shift
-  local path
+  typeset path
   
   for path in "$@"; do
     add_to_path "$path" "$position"
   done
 }
 
-# =============================================================================
 # OPTIMIZED PATH SETUP
-# =============================================================================
 
 # Cache directory existence checks for performance
 typeset -A _path_exists_cache
 
 path_exists() {
-  local path="$1"
+  typeset path="$1"
   
   # Check cache first
   if [[ -n "${_path_exists_cache[$path]}" ]]; then
@@ -84,13 +85,11 @@ path_exists() {
   fi
 }
 
-# =============================================================================
 # ENVIRONMENT-SPECIFIC PATH SETUP
-# =============================================================================
 
 # Homebrew paths (optimized check)
 setup_homebrew_paths() {
-  local brew_prefix
+  typeset brew_prefix
   
   # Determine Homebrew prefix efficiently
   if path_exists "/opt/homebrew/bin"; then
@@ -125,9 +124,7 @@ setup_dev_tool_paths() {
   fi
 }
 
-# =============================================================================
 # AUTOMATIC OPTIMIZATION
-# =============================================================================
 
 # Run optimization automatically when sourced
 () {
