@@ -1,55 +1,29 @@
-# =============================================================================
 # ZSH CONFIGURATION
-# =============================================================================
 # Main zsh configuration file that loads all plugins, completions, and tools
 # using antidote plugin manager with separation of concerns strategy.
 
 # Ensure ZDOTDIR is set (fallback if .zprofile hasn't loaded yet)
 export ZDOTDIR="${ZDOTDIR:-$HOME/.config/zsh}"
 
-# Minimal Homebrew PATH setup for critical commands
-# This ensures commands like starship are available immediately
-if [[ -d "/opt/homebrew/bin" ]]; then
-  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
-elif [[ -d "/usr/local/bin" ]]; then
-  export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
-fi
-
 # Load configuration files in specific order for optimal performance
 # Note: ZDOTDIR is set in .zprofile to $XDG_CONFIG_HOME/zsh
 
-# 1. PATH optimization must load first to set up PATH correctly
-# Using simplified version to avoid parse errors
-[[ -r "$ZDOTDIR/path-optimization-simple.zsh" ]] && source "$ZDOTDIR/path-optimization-simple.zsh"
+# 1. PATH management must load first to set up PATH correctly
+[[ -r "$ZDOTDIR/path.zsh" ]] && source "$ZDOTDIR/path.zsh"
 
 # 2. Load other configuration files
 for config_file ("$ZDOTDIR"/*.zsh); do
   # Skip already loaded files
-  [[ "$config_file" == *"path-optimization.zsh" ]] && continue
-  [[ "$config_file" == *"path-optimization-simple.zsh" ]] && continue
+  [[ "$config_file" == *"path.zsh" ]] && continue
   [[ -r "$config_file" ]] && source "$config_file"
 done
 
-# =============================================================================
 # EXTERNAL INTEGRATIONS
-# =============================================================================
 
 # 1Password shell plugins
 [[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
 
-# pnpm path configuration (handled by path-optimization.zsh)
-# Note: PATH management is now centralized for better performance
-
-# =============================================================================
-# PROMPT INITIALIZATION  
-# =============================================================================
+# PROMPT INITIALIZATION
 
 # Initialize starship prompt (installed via Homebrew)
 eval "$(starship init zsh)"
-
-# =============================================================================
-# COMPLETION FINALIZATION
-# =============================================================================
-
-# Note: compinit is handled by mattmc3/ez-compinit plugin loaded via antidote
-# No additional compinit call needed here

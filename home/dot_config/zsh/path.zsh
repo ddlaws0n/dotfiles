@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
-# Simple PATH optimization for zsh startup
+# PATH MANAGEMENT
+# Handles PATH setup and deduplication for optimal shell startup
 
 # Add Homebrew to PATH if not already present
 if [[ -d "/opt/homebrew/bin" ]] && [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
@@ -17,7 +18,7 @@ for dir in "$HOME/.scripts" "$HOME/.local/bin" "/Users/dlawson/.codeium/windsurf
   fi
 done
 
-# Simple PATH deduplication
+# PATH deduplication
 if [[ -n "$PATH" ]]; then
   OLD_IFS="$IFS"
   IFS=":"

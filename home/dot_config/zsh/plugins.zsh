@@ -1,6 +1,4 @@
-# =============================================================================
 # ANTIDOTE PLUGIN MANAGER CONFIGURATION
-# =============================================================================
 # This file configures antidote for managing zsh plugins, themes, and 
 # shell-integrated CLI tools from GitHub releases.
 

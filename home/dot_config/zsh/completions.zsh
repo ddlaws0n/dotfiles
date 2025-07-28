@@ -1,16 +1,56 @@
-# =============================================================================
-# LAZY COMPLETION LOADING SYSTEM
-# =============================================================================
-# This file implements lazy loading for expensive completion generation
-# to dramatically improve shell startup time
+# ZSH COMPLETIONS
+# Combined completion management with lazy loading for optimal startup performance
 
 # Completion cache directory
 typeset -g ZSH_COMPLETION_CACHE_DIR="${ZDOTDIR:-$HOME/.config/zsh}/completions"
 [[ -d "$ZSH_COMPLETION_CACHE_DIR" ]] || mkdir -p "$ZSH_COMPLETION_CACHE_DIR"
 
-# =============================================================================
-# LAZY LOADING FUNCTIONS
-# =============================================================================
+# COMPINIT SETUP
+# Note: Primary compinit is handled by mattmc3/ez-compinit plugin
+# This provides fallback and cache optimization for additional completions
+
+# Only run compinit if ez-compinit hasn't already done it
+if [[ -z "$_comps[zstyle]" ]]; then
+  autoload -Uz compinit
+  if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+    compinit -d "${ZDOTDIR}/.zcompdump"
+  else
+    compinit -C -d "${ZDOTDIR}/.zcompdump"
+  fi
+fi
+
+# COMPLETION STYLES
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:*:*:*:*' menu select
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
+zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+
+# FPATH SETUP
+# Ensure fpath includes paths for custom completions
+fpath=(
+  $HOMEBREW_PREFIX/share/zsh/site-functions
+  $HOME/.local/share/zsh/site-functions  # Custom completions
+  $fpath
+)
+
+# BASH COMPLETIONS
+autoload -U +X bashcompinit && bashcompinit
+
+# IMMEDIATE COMPLETIONS (fast loading only)
+# Load immediate completions (fast tools only)
+if command -v bun &> /dev/null && [[ -f "$BUN_INSTALL/_bun" ]]; then
+  source "$BUN_INSTALL/_bun"
+fi
+
+# Terraform completion (already optimized by terraform)
+if command -v terraform &> /dev/null; then
+  complete -o nospace -C /opt/homebrew/bin/terraform terraform
+fi
+
+# LAZY COMPLETION LOADING SYSTEM
+# For expensive completion generators to improve shell startup time
 
 # Generate and cache completion for a tool
 _lazy_load_completion() {
@@ -83,24 +123,6 @@ _create_lazy_wrapper() {
   "
 }
 
-# =============================================================================
-# IMMEDIATE LOADING FOR CRITICAL TOOLS
-# =============================================================================
-
-# Load critical completions immediately (fast tools only)
-if command -v bun &> /dev/null && [[ -f "$BUN_INSTALL/_bun" ]]; then
-  source "$BUN_INSTALL/_bun"
-fi
-
-# Load terraform completion (already optimized by terraform)
-if command -v terraform &> /dev/null; then
-  complete -o nospace -C /opt/homebrew/bin/terraform terraform
-fi
-
-# =============================================================================
-# LAZY LOADING SETUP
-# =============================================================================
-
 # List of tools to lazy load (expensive completion generators)
 typeset -a LAZY_COMPLETION_TOOLS=(
   gh
@@ -119,10 +141,7 @@ for tool in $LAZY_COMPLETION_TOOLS; do
   fi
 done
 
-# =============================================================================
 # BACKGROUND COMPLETION PRELOADING
-# =============================================================================
-
 # Preload completions in background (run after shell is interactive)
 _preload_completions() {
   for tool in $LAZY_COMPLETION_TOOLS; do
