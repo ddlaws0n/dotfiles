@@ -1,137 +1,101 @@
 {
     "mcpServers": {
-      "context7": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@upstash/context7-mcp@latest"
-        ],
-        "alwaysAllow": [
-          "resolve-library-id"
-        ]
-      },
-    "mcp-playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@executeautomation/playwright-mcp-server"
-      ],
-      "env": {},
-      "disabled": true
-    },
-    "memory": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
-      "env": {},
-      "disabled": false
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/dlawson/.gmailctl",
-        "/Users/dlawson/Repos"
-      ],
-      "env": {}
-    },
-      "sequential-thinking": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-sequential-thinking"
-        ],
-        "alwaysAllow": [
-          "sequentialthinking"
-        ]
-      }
-      {{- if .use_secrets -}},
-      "perplexity-ask": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@chatmcp/server-perplexity-ask"
-        ],
-        "env": {
-          "PERPLEXITY_API_KEY": "{{- onepasswordRead .my.perplexity_api_key "my" }}"
+        "context7": {
+            "command": "npx",
+            "args": ["-y", "@upstash/context7-mcp@latest"],
+            "alwaysAllow": ["resolve-library-id"]
         },
-        "alwaysAllow": [
-          "perplexity_ask"
-        ]
-      },
-      "@21st-dev/magic": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@21st-dev/magic@latest",
-          "API_KEY=\"{{- onepasswordRead .my.twenty_one_dev_api_key "my" }}\""
-        ]
-      },
-      "firecrawl-mcp": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "firecrawl-mcp"
-        ],
-        "env": {
-          "FIRECRAWL_API_KEY": "{{- onepasswordRead .my.firecrawl_api_key "my" }}"
+        "mcp-playwright": {
+            "command": "npx",
+            "args": ["-y", "@executeautomation/playwright-mcp-server"],
+            "env": {},
+            "disabled": true
         },
-        "alwaysAllow": [
-          "firecrawl_search",
-          "firecrawl_scrape",
-          "firecrawl_map"
-        ]
-      },
-      "taskmaster-ai": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "--package=task-master-ai",
-          "task-master-ai"
-        ],
-        "env": {
-          "ANTHROPIC_API_KEY": "{{- onepasswordRead .my.anthropic_api_key "my" }}",
-          "PERPLEXITY_API_KEY": "{{- onepasswordRead .my.perplexity_api_key "my" }}"
+        "memory": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-memory"],
+            "env": {},
+            "disabled": false
+        },
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/Users/dlawson/.gmailctl",
+                "{{ .git_dir }}"
+            ],
+            "env": {}
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+            "alwaysAllow": ["sequentialthinking"]
         }
-      },
-      "atlas-mcp-server-stdio": {
-        "command": "node",
-        "args": ["{{ .git_dir }}/mcp/atlas-mcp-server/dist/index.js"],
-        "env": {
-          "NEO4J_URI": "bolt://localhost:7687",
-          "NEO4J_USER": "{{- onepasswordRead .my.atlas_mcp_user "my" }}",
-          "NEO4J_PASSWORD": "{{- onepasswordRead .my.atlas_mcp_password "my" }}",
-          "LOG_LEVEL": "info",
-          "NODE_ENV": "production",
-          "MCP_TRANSPORT_TYPE": "stdio"
-        }
-      }
-      {{- if .work_computer -}},
-      "wiz-mcp-server": {
-        "disabled": false,
-        "command": "/opt/homebrew/bin/uv",
-        "cwd": "{{ .git_dir }}/mcp/wiz-mcp",
-        "args": [
-          "run",
-          "--with",
-          "mcp[cli]",
-          "mcp",
-          "run",
-          "./src/wiz_mcp_server/server.py"
-        ],
-        "env": {
-          "WIZ_DOTENV_PATH": "{{ .homeDir }}/.config/wiz/.env"
+{{- if .use_secrets }},
+        "perplexity-ask": {
+            "command": "npx",
+            "args": ["-y", "@chatmcp/server-perplexity-ask"],
+            "env": {
+                "PERPLEXITY_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.perplexity_api_key "my" }}{{- else }}{{ onepasswordRead .my.perplexity_api_key "my" }}{{- end }}"
+            },
+            "alwaysAllow": ["perplexity_ask"]
         },
-        "alwaysAllow": [
-          "wiz_get_issues",
-          "wiz_get_threats",
-          "wiz_search"
-        ]
-      }
-      {{- end }}
-      {{- end }}
+        "@21st-dev/magic": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@21st-dev/magic@latest",
+                "API_KEY=\"{{- if .secrets }}{{ onepasswordRead .secrets.twenty_one_dev_api_key "my" }}{{- else }}{{ onepasswordRead .my.twenty_one_dev_api_key "my" }}{{- end }}\""
+            ]
+        },
+        "firecrawl-mcp": {
+            "command": "npx",
+            "args": ["-y", "firecrawl-mcp"],
+            "env": {
+                "FIRECRAWL_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.firecrawl_api_key "my" }}{{- else }}{{ onepasswordRead .my.firecrawl_api_key "my" }}{{- end }}"
+            },
+            "alwaysAllow": ["firecrawl_search", "firecrawl_scrape", "firecrawl_map"]
+        },
+        "taskmaster-ai": {
+            "command": "npx",
+            "args": ["-y", "--package=task-master-ai", "task-master-ai"],
+            "env": {
+                "ANTHROPIC_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.anthropic_api_key "my" }}{{- else }}{{ onepasswordRead .my.anthropic_api_key "my" }}{{- end }}",
+                "PERPLEXITY_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.perplexity_api_key "my" }}{{- else }}{{ onepasswordRead .my.perplexity_api_key "my" }}{{- end }}"
+            }
+        },
+        "atlas-mcp-server-stdio": {
+            "command": "node",
+            "args": ["{{ .git_dir }}/mcp/atlas-mcp-server/dist/index.js"],
+            "env": {
+                "NEO4J_URI": "bolt://localhost:7687",
+                "NEO4J_USER": "{{- if .secrets }}{{ onepasswordRead .secrets.atlas_mcp_user "my" }}{{- else }}{{ onepasswordRead .my.atlas_mcp_user "my" }}{{- end }}",
+                "NEO4J_PASSWORD": "{{- if .secrets }}{{ onepasswordRead .secrets.atlas_mcp_password "my" }}{{- else }}{{ onepasswordRead .my.atlas_mcp_password "my" }}{{- end }}",
+                "LOG_LEVEL": "info",
+                "NODE_ENV": "production",
+                "MCP_TRANSPORT_TYPE": "stdio"
+            }
+        }
+{{- if .work_computer }},
+        "wiz-mcp-server": {
+            "disabled": false,
+            "command": "/opt/homebrew/bin/uv",
+            "cwd": "{{ .git_dir }}/mcp/wiz-mcp",
+            "args": [
+                "run",
+                "--with",
+                "mcp[cli]",
+                "mcp",
+                "run",
+                "./src/wiz_mcp_server/server.py"
+            ],
+            "env": {
+                "WIZ_DOTENV_PATH": "{{ .chezmoi.homeDir }}/.config/wiz/.env"
+            },
+            "alwaysAllow": ["wiz_get_issues", "wiz_get_threats", "wiz_search"]
+        }
+{{- end }}
+{{- end }}
     }
-  }
+}

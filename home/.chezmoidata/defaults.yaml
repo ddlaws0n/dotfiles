@@ -1,0 +1,28 @@
+# Default configuration values for chezmoi templates
+
+# Editor settings
+editor:
+  font_family: "JetBrains Mono"
+  font_size: 12
+  theme: "Catppuccin Mocha"
+
+# Git configuration  
+git:
+  name: "David D Lawson"
+  user: "ddlaws0n"
+
+# Path configurations
+paths:
+  homebrew_prefix: "/opt/homebrew"
+  xdg_config_home: "{{ .chezmoi.homeDir }}/.config"
+  xdg_cache_home: "{{ .chezmoi.homeDir }}/.cache" 
+  xdg_data_home: "{{ .chezmoi.homeDir }}/.local/share"
+  xdg_state_home: "{{ .chezmoi.homeDir }}/.local/state"
+  scripts_dir: "{{ .chezmoi.homeDir }}/.scripts"
+  local_bin: "{{ .chezmoi.homeDir }}/.local/bin"
+
+# Feature flags
+features:
+  mcp_enabled: true
+  dev_tools_enabled: true
+  gui_tools_enabled: true
