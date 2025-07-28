@@ -49,6 +49,17 @@ if command -v terraform &> /dev/null; then
   complete -o nospace -C /opt/homebrew/bin/terraform terraform
 fi
 
+# Essential commands that should load immediately (not wrapped)
+if command -v gh &> /dev/null; then
+  eval "$(gh completion -s zsh)" 2>/dev/null || true
+fi
+
+if command -v starship &> /dev/null; then
+  eval "$(starship completions zsh)" 2>/dev/null || true
+fi
+
+# Note: mise completion is handled by mise activate, no additional setup needed
+
 # LAZY COMPLETION LOADING SYSTEM
 # For expensive completion generators to improve shell startup time
 
@@ -124,14 +135,12 @@ _create_lazy_wrapper() {
 }
 
 # List of tools to lazy load (expensive completion generators)
+# Note: Removed essential commands that shouldn't be wrapped (gh, mise, etc.)
 typeset -a LAZY_COMPLETION_TOOLS=(
-  gh
   fnm  
   uv
   op
-  starship
   turso
-  mise
 )
 
 # Create lazy wrappers for each tool

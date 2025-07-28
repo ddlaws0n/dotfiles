@@ -12,8 +12,22 @@ export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
 ## Zsh configuration directory
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
-# Note: PATH optimization and Homebrew setup is now handled by 
-# path.zsh for better performance and deduplication
+## Essential PATH setup (before mise activation)
+# Add Homebrew to PATH if not already present
+if [[ -d "/opt/homebrew/bin" ]] && [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+  export HOMEBREW_PREFIX="/opt/homebrew"
+elif [[ -d "/usr/local/bin" ]] && [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+  export PATH="/usr/local/bin:/usr/local/sbin:$PATH"
+  export HOMEBREW_PREFIX="/usr/local"
+fi
+
+# Add essential user paths
+for dir in "$HOME/.scripts" "$HOME/.local/bin" "/Users/dlawson/.codeium/windsurf/bin"; do
+  if [[ -d "$dir" ]] && [[ ":$PATH:" != *":$dir:"* ]]; then
+    export PATH="$PATH:$dir"
+  fi
+done
 
 ## Language environment managers
 # Note: bun, go, node, pnpm, uv are managed by mise activate
