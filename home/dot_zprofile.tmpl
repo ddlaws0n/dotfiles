@@ -69,6 +69,14 @@ export PAGER="less"
 ### Locale settings
 export LANG="en_US.UTF-8"
 
+## ZSH Completions Setup
+# FPATH must be set before compinit runs in ZDOTDIR
+fpath=(
+  $HOMEBREW_PREFIX/share/zsh/site-functions
+  $HOME/.local/share/zsh/site-functions  # Custom completions
+  $fpath
+)
+
 ## Tool activations
 
 # Activate mise for version management (primary activation point)
