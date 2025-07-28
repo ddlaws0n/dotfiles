@@ -51,13 +51,11 @@ fi
 export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
 {{ end }}
 
-{{/* Secrets disabled until 1Password account selection is configured
 {{ if .use_secrets }}
 # API Keys
-export OPENROUTER_API_KEY="{{ onepasswordRead .secrets.openrouter_api_key }}"
-export FIRECRAWL_API_KEY="{{ onepasswordRead .secrets.firecrawl_api_key }}"
+export OPENROUTER_API_KEY="{{ onepasswordRead .my.openrouter_api_key .personal_1p_account }}"
+export FIRECRAWL_API_KEY="{{ onepasswordRead .my.firecrawl_api_key .personal_1p_account }}"
 {{ end }}
-*/}}
 
 ## Editor preferences
 export EDITOR="nano"
