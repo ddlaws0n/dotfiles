@@ -2,10 +2,18 @@
 {{- $git_dir := promptStringOnce . "git_dir" "Git directory where your projects are located (e.g. code):" -}}
 {{- $work_computer := promptBoolOnce . "work_computer" "Is this a work computer for daily driving? (true/false)" -}}
 {{- $is_ci_workflow := promptBoolOnce . "is_ci_workflow" "Is this a CI workflow? (true/false)" -}}
-{{- $personal_1p_account := promptStringOnce . "personal_1p_account" "Personal 1Password account (email or short name):" -}}
-{{- $work_1p_account := promptStringOnce . "work_1p_account" "Work 1Password account (email or short name):" -}}
-{{- $personal_vault_name := promptStringOnce . "personal_vault_name" "Personal 1Password vault name:" -}}
-{{- $work_vault_name := promptStringOnce . "work_vault_name" "Work 1Password vault name:" -}}
+{{- $personal_1p_account := "" -}}
+{{- $personal_vault_name := "" -}}
+{{- $work_1p_account := "" -}}
+{{- $work_vault_name := "" -}}
+{{- if $use_secrets -}}
+{{- $personal_1p_account = promptStringOnce . "personal_1p_account" "Personal 1Password account (email or short name):" -}}
+{{- $personal_vault_name = promptStringOnce . "personal_vault_name" "Personal 1Password vault name:" -}}
+{{- if $work_computer -}}
+{{- $work_1p_account = promptStringOnce . "work_1p_account" "Work 1Password account (email or short name):" -}}
+{{- $work_vault_name = promptStringOnce . "work_vault_name" "Work 1Password vault name:" -}}
+{{- end -}}
+{{- end -}}
 
 [data]
     git_name         = 'David D Lawson'
@@ -19,9 +27,11 @@
     {{- end }}
     {{ if $use_secrets -}}
     personal_1p_account = {{ $personal_1p_account | quote }}
-    work_1p_account     = {{ $work_1p_account | quote }}
     personal_vault_name = {{ $personal_vault_name | quote }}
+    {{ if $work_computer -}}
+    work_1p_account     = {{ $work_1p_account | quote }}
     work_vault_name     = {{ $work_vault_name | quote }}
+    {{- end }}
     {{- end }}
 
 [edit]
