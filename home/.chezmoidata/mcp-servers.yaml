@@ -1,0 +1,89 @@
+# MCP Server configurations
+
+# Base servers (always enabled)
+base_servers:
+  context7:
+    command: "npx"
+    args: ["-y", "@upstash/context7-mcp@latest"]
+    alwaysAllow: ["resolve-library-id"]
+  
+  memory:
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-memory"]
+    env: {}
+    disabled: false
+    
+  filesystem:
+    command: "npx"
+    args: 
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "/Users/dlawson/.gmailctl"
+      - "{{ .git_dir }}"
+    env: {}
+    
+  sequential-thinking:
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    alwaysAllow: ["sequentialthinking"]
+
+# Optional servers (can be disabled)
+optional_servers:
+  mcp-playwright:
+    command: "npx"
+    args: ["-y", "@executeautomation/playwright-mcp-server"]
+    env: {}
+    disabled: true
+
+# Secret-dependent servers (only enabled when secrets are available)
+secret_servers:
+  perplexity-ask:
+    command: "npx"
+    args: ["-y", "@chatmcp/server-perplexity-ask"]
+    env:
+      PERPLEXITY_API_KEY: "perplexity_api_key"
+    alwaysAllow: ["perplexity_ask"]
+    
+  twenty-one-dev-magic:
+    name: "@21st-dev/magic"
+    command: "npx"
+    args: 
+      - "-y"
+      - "@21st-dev/magic@latest"
+      - "API_KEY=\"{{ template \"getApiKey\" dict \"service\" \"twenty_one_dev\" \"data\" . }}\""
+      
+  firecrawl-mcp:
+    command: "npx"
+    args: ["-y", "firecrawl-mcp"]
+    env:
+      FIRECRAWL_API_KEY: "firecrawl_api_key"
+    alwaysAllow: ["firecrawl_search", "firecrawl_scrape", "firecrawl_map"]
+    
+  taskmaster-ai:
+    command: "npx"
+    args: ["-y", "--package=task-master-ai", "task-master-ai"]
+    env:
+      ANTHROPIC_API_KEY: "anthropic_api_key"
+      PERPLEXITY_API_KEY: "perplexity_api_key"
+      
+  atlas-mcp-server-stdio:
+    command: "node"
+    args: ["{{ .git_dir }}/mcp/atlas-mcp-server/dist/index.js"]
+    env:
+      NEO4J_URI: "bolt://localhost:7687"
+      NEO4J_USER: "atlas_mcp_user"
+      NEO4J_PASSWORD: "atlas_mcp_password"
+      LOG_LEVEL: "info"
+      NODE_ENV: "production"
+      MCP_TRANSPORT_TYPE: "stdio"
+
+# Work-specific servers
+work_servers:
+  wiz-mcp-server:
+    disabled: false
+    command: "/opt/homebrew/bin/uv"
+    cwd: "{{ .git_dir }}/mcp/wiz-mcp"
+    args: ["run", "--with", "mcp[cli]", "mcp", "run", "./src/wiz_mcp_server/server.py"]
+    env:
+      WIZ_DOTENV_PATH: "{{ .chezmoi.homeDir }}/.config/wiz/.env"
+    alwaysAllow: ["wiz_get_issues", "wiz_get_threats", "wiz_search"]

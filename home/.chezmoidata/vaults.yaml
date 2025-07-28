@@ -1,0 +1,10 @@
+# 1Password vault mappings
+
+vaults:
+  personal: "my"
+  work: "wizio"
+
+# Vault IDs (for direct reference if needed)
+vault_ids:
+  personal: "z3z72mlgus2ni7cd6hje3vifny"
+  work: "53quluhq3elj2ryeb6itiilns4"

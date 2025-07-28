@@ -1,0 +1,60 @@
+{{/*
+  Path and environment utilities for chezmoi templates
+  
+  Usage:
+    {{ template "xdgPaths" . }}
+    {{ template "addToPath" "/custom/path" }}
+*/}}
+
+{{/*
+  xdgPaths - Export XDG Base Directory environment variables
+  Parameters:
+    - data: The template data context (.)
+*/}}
+{{- define "xdgPaths" -}}
+## XDG Base Directory Specification
+export XDG_CONFIG_HOME="{{ .chezmoi.homeDir }}/.config"
+export XDG_CACHE_HOME="{{ .chezmoi.homeDir }}/.cache"
+export XDG_DATA_HOME="{{ .chezmoi.homeDir }}/.local/share"
+export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
+{{- end -}}
+
+{{/*
+  homebrewSetup - Configure Homebrew environment
+  Parameters:
+    - data: The template data context (.)
+*/}}
+{{- define "homebrewSetup" -}}
+## Homebrew
+if [[ -d "/opt/homebrew/bin" ]]; then
+  export HOMEBREW_PREFIX="/opt/homebrew"
+elif [[ -d "/usr/local/bin" ]]; then
+  export HOMEBREW_PREFIX="/usr/local"
+fi
+
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
+fi
+{{- end -}}
+
+{{/*
+  commonPaths - Add common development paths
+  Parameters:
+    - data: The template data context (.)
+*/}}
+{{- define "commonPaths" -}}
+## Scripts directory
+export PATH="$HOME/.scripts:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+{{- end -}}
+
+{{/*
+  editorPrefs - Set editor preferences
+  Parameters:
+    - data: The template data context (.)
+*/}}
+{{- define "editorPrefs" -}}
+## Editor preferences
+export EDITOR="nano"
+export VISUAL="code"
+{{- end -}}

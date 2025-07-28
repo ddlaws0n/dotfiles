@@ -1,0 +1,88 @@
+{{/*
+  MCP Server configuration generator
+  
+  Usage:
+    {{ template "generateMcpServers" . }}
+*/}}
+
+{{- /* This template assumes secrets.tmpl has already been included */ -}}
+
+{{- define "generateMcpServers" -}}
+{
+    "mcpServers": {
+{{- /* Base servers (always included) */ -}}
+{{- range $name, $config := .base_servers }}
+        "{{ $name }}": {
+            "command": "{{ $config.command }}",
+            "args": {{ $config.args | toJson }}
+{{- if $config.env }},
+            "env": {{ $config.env | toJson }}
+{{- end }}
+{{- if $config.disabled }},
+            "disabled": {{ $config.disabled }}
+{{- end }}
+{{- if $config.alwaysAllow }},
+            "alwaysAllow": {{ $config.alwaysAllow | toJson }}
+{{- end }}
+        },
+{{- end }}
+
+{{- /* Optional servers */ -}}
+{{- range $name, $config := .optional_servers }}
+        "{{ $name }}": {
+            "command": "{{ $config.command }}",
+            "args": {{ $config.args | toJson }},
+            "env": {{ $config.env | toJson }},
+            "disabled": {{ $config.disabled }}
+        },
+{{- end }}
+
+{{- /* Secret-dependent servers (only if secrets are enabled) */ -}}
+{{- if and .use_secrets (not .is_ci_workflow) }}
+{{- range $name, $config := .secret_servers }}
+        "{{ if $config.name }}{{ $config.name }}{{ else }}{{ $name }}{{ end }}": {
+            "command": "{{ $config.command }}",
+{{- if eq $name "twenty-one-dev-magic" }}
+            "args": {{ $config.args | toJson }}
+{{- else }}
+            "args": {{ $config.args | toJson }}
+{{- if $config.env }},
+            "env": {
+{{- range $envVar, $secretKey := $config.env }}
+                "{{ $envVar }}": "{{ template "getSecret" dict "key" $secretKey "data" $ }}"
+{{- if not (eq $envVar (last (keys $config.env))) }},{{ end }}
+{{- end }}
+            }
+{{- end }}
+{{- end }}
+{{- if $config.alwaysAllow }},
+            "alwaysAllow": {{ $config.alwaysAllow | toJson }}
+{{- end }}
+        },
+{{- end }}
+
+{{- /* Work-specific servers */ -}}
+{{- if .work_computer }}
+{{- range $name, $config := .work_servers }}
+        "{{ $name }}": {
+            "disabled": {{ $config.disabled }},
+            "command": "{{ $config.command }}",
+{{- if $config.cwd }}
+            "cwd": "{{ $config.cwd }}",
+{{- end }}
+            "args": {{ $config.args | toJson }},
+            "env": {
+{{- range $envVar, $value := $config.env }}
+                "{{ $envVar }}": "{{ $value }}"
+{{- if not (eq $envVar (last (keys $config.env))) }},{{ end }}
+{{- end }}
+            },
+            "alwaysAllow": {{ $config.alwaysAllow | toJson }}
+        }
+{{- if not (eq $name (last (keys $.work_servers))) }},{{ end }}
+{{- end }}
+{{- end }}
+{{- end }}
+    }
+}
+{{- end -}}
