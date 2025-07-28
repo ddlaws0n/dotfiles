@@ -3,8 +3,8 @@ if command -v path_helper &> /dev/null; then
   eval "$(/usr/libexec/path_helper -s)"
 fi
 
-{{- /* Include path helpers by defining functions inline */ -}}
-{{- define "homebrewSetup" -}}
+{{/* Include path helpers by defining functions inline */}}
+{{- define "homebrewSetup" }}
 ## Homebrew
 if [[ -d "/opt/homebrew/bin" ]]; then
   export HOMEBREW_PREFIX="/opt/homebrew"
@@ -15,49 +15,51 @@ fi
 if [[ -n "$HOMEBREW_PREFIX" ]]; then
   export PATH="$HOMEBREW_PREFIX/bin:$HOMEBREW_PREFIX/sbin:$PATH"
 fi
-{{- end -}}
+{{- end }}
 
-{{- define "xdgPaths" -}}
+{{- define "xdgPaths" }}
 ## XDG Base Directory Specification
 export XDG_CONFIG_HOME="{{ .chezmoi.homeDir }}/.config"
 export XDG_CACHE_HOME="{{ .chezmoi.homeDir }}/.cache"
 export XDG_DATA_HOME="{{ .chezmoi.homeDir }}/.local/share"
 export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
-{{- end -}}
+{{- end }}
 
-{{- define "commonPaths" -}}
+{{- define "commonPaths" }}
 ## Scripts directory
 export PATH="$HOME/.scripts:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-{{- end -}}
+{{- end }}
 
-{{- define "editorPrefs" -}}
+{{- define "editorPrefs" }}
 ## Editor preferences
 export EDITOR="nano"
 export VISUAL="code"
-{{- end -}}
-
-{{ template "homebrewSetup" . }}
+{{- end }}
 
 {{ template "xdgPaths" . }}
 
 ## Zsh configuration directory
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
-{{ template "commonPaths" . }}
+# Note: PATH optimization and Homebrew setup is now handled by 
+# path-optimization.zsh for better performance and deduplication
 
 ## Language environment managers
+# Note: bun, go, node, pnpm, uv are managed by mise activate
+# Only export variables for tools that need them but aren't PATH-managed by mise
 
-# Bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# Bun - mise manages the PATH, but some tools expect BUN_INSTALL
+if command -v mise &> /dev/null && mise list bun &> /dev/null; then
+  export BUN_INSTALL="$(mise where bun 2>/dev/null || echo "$HOME/.bun")"
+fi
 
-# Golang (custom GOPATH optional)
-export GOPATH="$HOME/go"
-export PATH="$GOPATH/bin:$PATH"
+# Golang - mise manages the PATH, but some tools expect GOPATH  
+if command -v mise &> /dev/null && mise list go &> /dev/null; then
+  export GOPATH="$HOME/go"  # Standard location for Go workspace
+fi
 
-# Windsurf
-export PATH="/Users/dlawson/.codeium/windsurf/bin:$PATH"
+# Note: Non-mise tools (Windsurf, local bins) are managed by path-optimization.zsh
 
 ## Custom paths and environment variables
 {{ if .work_computer }}
@@ -82,7 +84,7 @@ export LANG="en_US.UTF-8"
 
 ## Tool activations
 
-# Activate mise for version management
+# Activate mise for version management (primary activation point)
 if command -v mise &> /dev/null; then
     eval "$(mise activate zsh)"
 fi

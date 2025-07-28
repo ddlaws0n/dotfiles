@@ -1,149 +1,252 @@
-# Homebrew Taps
+# =============================================================================
+# HOMEBREW TAPS
+# =============================================================================
+
 tap "anchordotdev/tap"
-tap "browsers-software/tap"
 tap "hashicorp/tap"
 tap "jwbargsten/misc"
-tap "libsql/sqld"
+# tap "libsql/sqld"  # Removed - no formula available
 tap "oven-sh/bun"
 tap "smudge/smudge"
 tap "tursodatabase/tap"
 
-# Homebrew Packages
-brew "awscli"
-brew "azure-cli"
-brew "bat"
-brew "chezmoi"
-brew "coreutils"
-brew "defaultbrowser"
-brew "fnm"
-brew "fzf"
-brew "gh"
-brew "git-delta"
-brew "git-filter-repo"
-brew "glib"
-brew "gmailctl"
-brew "unbound"
-brew "gnutls"
-brew "gnupg"
-brew "go"
-brew "golangci-lint"
-brew "jq"
-brew "jsonnet"
-brew "just"
-brew "lefthook"
-brew "libavif"
-brew "pandoc"
-brew "qemu"
-brew "ripgrep"
-brew "starship"
-brew "tree"
-brew "uv"
-brew "vercel-cli"
-brew "zinit"
-brew "anchordotdev/tap/anchor"
-brew "hashicorp/tap/terraform"
-brew "jwbargsten/misc/defbro"
-brew "oven-sh/bun/bun"
-brew "smudge/smudge/nightlight"
-brew "tursodatabase/tap/turso"
+# =============================================================================
+# CORE SYSTEM UTILITIES
+# =============================================================================
 
-# Homebrew Casks
-cask "1password-cli"
-cask "arc"
-cask "bettermouse"
-cask "box-drive"
-cask "chatgpt"
-cask "claude"
-cask "figma"
-cask "ghostty"
-cask "gitbutler"
-cask "github"
-cask "google-cloud-sdk"
-cask "google-drive"
-cask "iina"
-cask "imageoptim"
-cask "itsycal"
-cask "keka"
-cask "kekaexternalhelper"
-cask "notion-calendar"
-cask "onyx"
-cask "openinterminal"
-cask "orbstack"
-cask "pearcleaner"
-cask "qspace-pro"
-cask "raindropio"
-cask "raycast"
-cask "shottr"
-cask "slack-cli"
-cask "spotify"
-cask "tailscale"
-cask "vanilla"
-cask "virtualbuddy"
-cask "visual-studio-code"
-cask "warp"
+brew "coreutils"           # GNU core utilities
+brew "defaultbrowser"      # Set default browser from command line
+brew "gnupg"              # GNU Privacy Guard
+brew "gnutls"             # Cryptographic library
+brew "unbound"            # DNS resolver
 
-# Homebrew Fonts
-cask "font-fira-code"
-cask "font-fira-code-nerd-font"
-cask "font-fira-mono-nerd-font"
-cask "font-hack-nerd-font"
-cask "font-jetbrains-mono"
-cask "font-monaspace"
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
 
-# VSCode Extensions
+## Version Control & Repository Tools
+brew "git-filter-repo"    # Tool for rewriting git history
+brew "lefthook"           # Git hooks manager
+
+## Configuration Management
+brew "chezmoi"            # Dotfiles manager
+brew "just"               # Command runner (justfile)
+
+## Language Tools & Runtimes
+brew "mise"               # Runtime version manager (replaces asdf)
+
+# =============================================================================
+# SHELL & TERMINAL ENHANCEMENTS
+# =============================================================================
+
+brew "antidote"           # Zsh plugin manager (replaces zinit)
+brew "starship"           # Cross-shell prompt
+
+## CLI Tools with shell integration
+brew "fzf"                # Fuzzy finder
+brew "bat"                # Better cat with syntax highlighting  
+brew "ripgrep"            # Better grep
+brew "git-delta"          # Better git diff viewer
+brew "gh"                 # GitHub CLI
+brew "jq"                 # JSON processor
+
+## System CLI Tools
+brew "eza"                # Better ls replacement
+brew "tre-command"        # Better find
+brew "usage"              # Better top/htop
+brew "tree"               # Directory tree viewer
+
+# =============================================================================
+# DATA & FILE PROCESSING
+# =============================================================================
+
+brew "jsonnet"            # Configuration language
+brew "pandoc"             # Document converter
+
+# =============================================================================
+# COMMUNICATION & PRODUCTIVITY
+# =============================================================================
+
+brew "gmailctl"           # Gmail management via CLI
+
+# =============================================================================
+# SECURITY & PRIVACY
+# =============================================================================
+
+brew "anchordotdev/tap/anchor"  # Certificate management
+brew "smudge/smudge/nightlight" # Blue light filter
+
+# =============================================================================
+# DATABASE & STORAGE
+# =============================================================================
+
+brew "tursodatabase/tap/turso"  # Edge database CLI
+
+# =============================================================================
+# AI & MACHINE LEARNING
+# =============================================================================
+
+brew "ollama"             # Local LLM runner
+brew "whisper-cpp"        # Speech-to-text
+
+# =============================================================================
+# SYSTEM UTILITIES
+# =============================================================================
+
+brew "jwbargsten/misc/defbro"  # Default browser utility
+brew "qemu"               # Virtual machine emulator
+brew "glib"               # Low-level system library
+
+# =============================================================================
+# GITHUB ACTIONS & CI/CD
+# =============================================================================
+
+brew "act"                # Run GitHub Actions locally
+
+# =============================================================================
+# APPLICATIONS (CASKS)
+# =============================================================================
+
+## Security & Authentication
+cask "1password-cli"      # Password manager CLI
+
+## Browsers & Web
+cask "arc"                # Modern web browser
+
+## Development Tools
+cask "visual-studio-code" # Code editor
+cask "ghostty"            # Terminal emulator
+cask "warp"               # Modern terminal
+cask "gitbutler"          # Git branch management
+
+## Cloud & DevOps
+cask "orbstack"           # Docker Desktop alternative
+
+## AI & Productivity
+cask "claude"             # Anthropic Claude
+cask "raycast"            # Spotlight replacement
+
+## Design & Media
+cask "iina"               # Media player
+cask "imageoptim"         # Image optimizer
+
+## System Utilities
+cask "bettermouse"        # Mouse customization
+cask "pearcleaner"        # App uninstaller
+cask "onyx"               # System maintenance
+cask "openinterminal"     # Terminal opener from Finder
+
+## File Management & Storage
+cask "google-drive"       # Google Drive
+cask "qspace-pro"         # File manager
+cask "keka"               # Archive utility
+cask "kekaexternalhelper" # Keka helper
+
+## Calendar & Time
+cask "notion-calendar"    # Calendar app
+cask "itsycal"            # Menu bar calendar
+
+## Screenshots & Screen Recording
+cask "shottr"             # Screenshot tool
+
+## Music & Entertainment
+cask "spotify"            # Music streaming
+
+## Virtualization
+cask "virtualbuddy"       # Virtual machine manager
+
+## Networking
+# cask "tailscale"          # VPN service
+
+# =============================================================================
+# FONTS
+# =============================================================================
+
+cask "font-fira-code"           # Fira Code font
+cask "font-fira-code-nerd-font" # Fira Code with icons
+cask "font-fira-mono-nerd-font" # Fira Mono with icons
+cask "font-hack-nerd-font"      # Hack font with icons
+cask "font-jetbrains-mono"      # JetBrains Mono font
+cask "font-monaspace"           # GitHub's Monaspace font family
+
+# =============================================================================
+# VS CODE EXTENSIONS
+# =============================================================================
+
+## Project Management
 vscode "alefragnani.project-manager"
+
+## UI & Icons
 vscode "antfu.iconify"
-vscode "antfu.vite"
-vscode "astro-build.astro-vscode"
+vscode "catppuccin.catppuccin-vsc"
+vscode "catppuccin.catppuccin-vsc-icons"
+vscode "thang-nm.catppuccin-perfect-icons"
+
+## Frameworks & Languages
+vscode "antfu.vite"                    # Vite
+vscode "astro-build.astro-vscode"      # Astro
+vscode "golang.go"                     # Go
+vscode "ms-python.python"              # Python
+vscode "ms-python.debugpy"             # Python debugger
+vscode "ms-python.vscode-pylance"      # Python language server
+vscode "charliermarsh.ruff"            # Python linter/formatter
+
+## Web Development
+vscode "bradlc.vscode-tailwindcss"     # Tailwind CSS
+vscode "christian-kohler.npm-intellisense" # NPM IntelliSense
+vscode "csstools.postcss"              # PostCSS
+vscode "dbaeumer.vscode-eslint"        # ESLint
+vscode "esbenp.prettier-vscode"        # Prettier
+vscode "formulahendry.auto-rename-tag" # Auto rename paired HTML tags
+
+## Markdown & Documentation
 vscode "bierner.github-markdown-preview"
 vscode "bierner.markdown-checkbox"
 vscode "bierner.markdown-emoji"
 vscode "bierner.markdown-mermaid"
 vscode "bierner.markdown-preview-github-styles"
-vscode "biomejs.biome"
-vscode "bradlc.vscode-tailwindcss"
-vscode "catppuccin.catppuccin-vsc"
-vscode "catppuccin.catppuccin-vsc-icons"
-vscode "christian-kohler.npm-intellisense"
-vscode "charliermarsh.ruff"
-vscode "csstools.postcss"
-vscode "dbaeumer.vscode-eslint"
-vscode "denoland.vscode-deno"
-vscode "docker.docker"
-vscode "editorconfig.editorconfig"
-vscode "esbenp.prettier-vscode"
-vscode "formulahendry.auto-rename-tag"
-vscode "github.copilot"
-vscode "github.copilot-chat"
-vscode "github.github-vscode-theme"
-vscode "github.vscode-github-actions"
-vscode "github.vscode-pull-request-github"
-vscode "golang.go"
-vscode "grafana.vscode-jsonnet"
-vscode "hashicorp.terraform"
-vscode "jock.svg"
-vscode "jorcelinojunior.chezmoi-tools"
-vscode "mattfoulks.har-analyzer"
-vscode "mquandalle.graphql"
-vscode "ms-azuretools.vscode-docker"
-vscode "ms-playwright.playwright"
-vscode "ms-python.debugpy"
-vscode "ms-python.python"
-vscode "ms-python.vscode-pylance"
-vscode "ms-vscode.theme-materialkit"
-vscode "openai.chatgpt"
-vscode "pkief.material-icon-theme"
-vscode "redhat.vscode-yaml"
-vscode "romantomjak.go-template"
-vscode "rooveterinaryinc.roo-cline"
-vscode "saoudrizwan.claude-dev"
-vscode "skellock.just"
-vscode "svelte.svelte-vscode"
-vscode "tamasfe.even-better-toml"
-vscode "thang-nm.catppuccin-perfect-icons"
-vscode "unifiedjs.vscode-mdx"
-vscode "usernamehw.errorlens"
-vscode "vitest.explorer"
-vscode "wizcloud.wiz-vscode"
-vscode "yoavbls.pretty-ts-errors"
 vscode "yzhang.markdown-all-in-one"
+vscode "unifiedjs.vscode-mdx"          # MDX
+
+## Code Quality & Formatting
+vscode "biomejs.biome"                 # Biome linter/formatter
+vscode "editorconfig.editorconfig"     # EditorConfig
+vscode "usernamehw.errorlens"          # Error highlighting
+vscode "yoavbls.pretty-ts-errors"      # Better TypeScript errors
+
+## Git & GitHub
+vscode "github.copilot"                # GitHub Copilot
+vscode "github.copilot-chat"           # GitHub Copilot Chat
+vscode "github.github-vscode-theme"    # GitHub theme
+vscode "github.vscode-github-actions"  # GitHub Actions
+vscode "github.vscode-pull-request-github" # GitHub PRs
+
+## DevOps & Infrastructure
+vscode "docker.docker"                 # Docker
+vscode "hashicorp.terraform"           # Terraform
+
+## Configuration & Data
+vscode "redhat.vscode-yaml"            # YAML
+vscode "tamasfe.even-better-toml"      # TOML
+vscode "grafana.vscode-jsonnet"        # Jsonnet
+vscode "romantomjak.go-template"       # Go templates
+vscode "skellock.just"                 # Justfile
+
+## Testing
+vscode "ms-playwright.playwright"      # Playwright
+vscode "vitest.explorer"               # Vitest
+
+## AI & LLM
+vscode "openai.chatgpt"                # ChatGPT
+vscode "rooveterinaryinc.roo-cline"    # Roo Cline
+vscode "saoudrizwan.claude-dev"        # Claude Dev
+
+## Specialized Tools
+vscode "jorcelinojunior.chezmoi-tools" # Chezmoi
+vscode "wizcloud.wiz-vscode"           # Wiz security
+vscode "mattfoulks.har-analyzer"       # HAR file analyzer
+vscode "mquandalle.graphql"            # GraphQL
+vscode "jock.svg"                      # SVG
+
+## Themes & UI
+vscode "ms-vscode.theme-materialkit"   # Material Kit theme
