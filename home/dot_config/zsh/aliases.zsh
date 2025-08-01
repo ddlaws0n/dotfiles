@@ -32,8 +32,25 @@ cd() {
     [[ -n "$PS1" && -z "$_SHELL_STARTING" ]] && ll
 }
 
-# Git
+# Git - Essential aliases (replaces Oh-My-Zsh git plugin to avoid gh alias conflict)
+alias g='git'
+alias ga='git add'
+alias gaa='git add --all'
+alias gc='git commit -v'
+alias gcm='git commit -m'
+alias gd='git diff'
+alias gds='git diff --staged'
 alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short' # A nicer Git Log
+alias gp='git push'
+alias gpl='git pull'
+alias gs='git status'
+alias gst='git status'
+alias gb='git branch'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gm='git merge'
+alias gr='git remote'
+alias grv='git remote -v'
 applyignore() {
     # DESC: Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
 
