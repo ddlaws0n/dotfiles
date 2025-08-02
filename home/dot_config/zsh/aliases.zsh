@@ -59,7 +59,7 @@ applyignore() {
 
 # Prefer `bat` over `cat` when installed
 [[ "$(command -v bat)" ]] \
-    && alias cat="bat"
+    && alias cat="bat --style=auto"
 
 # MacOS specific
 alias cpwd='pwd | tr -d "\n" | pbcopy'
@@ -79,10 +79,10 @@ else
     alias tr="tree -a -C --gitignore"
 fi
 
-# New tools from your Brewfile
-alias cat='bat --style=auto'
-alias find='tre-command'
-alias top='usage'
+# New tools from your Brewfile (safe aliases that don't override system commands)
+alias tre='tre-command'     # Tree-like find alternative
+alias usage='usage'         # Modern top alternative
+# Note: bat alias for cat defined above in conditional section
 
 # Additional useful aliases for new tools
 alias llm='ollama'
