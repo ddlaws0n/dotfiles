@@ -24,6 +24,11 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE="20"
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 
+# Fast-syntax-highlighting theme (catppuccin-mocha compatible)
+if [[ -f "$ZDOTDIR/catppuccin-bright.ini" ]]; then
+  fast-theme "$ZDOTDIR/catppuccin-bright.ini"
+fi
+
 # Completion styles handled in completions.zsh
 
 # History configuration
