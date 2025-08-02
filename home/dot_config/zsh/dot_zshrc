@@ -24,9 +24,7 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE="20"
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 
-# Completion styles
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+# Completion styles handled in completions.zsh
 
 # History configuration
 HISTFILE=~/.zsh_history
@@ -35,6 +33,14 @@ SAVEHIST=10000
 setopt appendhistory sharehistory incappendhistory
 setopt hist_ignore_all_dups hist_save_no_dups hist_ignore_space hist_reduce_blanks
 
+# Performance optimizations
+setopt no_beep                    # Silence terminal bells
+export DISABLE_UNTRACKED_FILES_DIRTY=true  # Faster git status in large repos
+
+# Smart history navigation keybinds
+bindkey '^p' history-search-backward    # Ctrl+P for previous matching command
+bindkey '^n' history-search-forward     # Ctrl+N for next matching command
+
 # Load configuration files
 for config_file in "$ZDOTDIR"/aliases.zsh "$ZDOTDIR"/completions.zsh; do
   [[ -r "$config_file" ]] && source "$config_file"
@@ -42,6 +48,11 @@ done
 
 # External integrations
 [[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
+
+# Ghostty shell integration (enables enhanced terminal features)
+if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
+  source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+fi
 
 # Initialize starship prompt
 eval "$(starship init zsh)"

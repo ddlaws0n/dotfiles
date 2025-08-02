@@ -89,3 +89,6 @@ elif [ -f "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]; then
     source "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
     source "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"
 fi
+
+# FZF theming to match Catppuccin Mocha (same as Ghostty theme)
+export FZF_DEFAULT_OPTS="--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6ac,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6ac,hl+:#f38ba8"
