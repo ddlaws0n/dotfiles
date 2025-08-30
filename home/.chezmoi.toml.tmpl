@@ -1,82 +1,105 @@
-# ============================================================================= # CHEZMOI
-CONFIGURATION TEMPLATE #
-============================================================================= # This template
-generates the main chezmoi configuration file (.chezmoi.toml) # It prompts for user preferences and
-sets up the dotfiles environment #
-============================================================================= #
------------------------------------------------------------------------------ # INTERACTIVE SETUP
-VARIABLES # ----------------------------------------------------------------------------- # Core
-configuration prompts that determine the behavior of the dotfiles
+# =============================================================================
+# CHEZMOI CONFIGURATION TEMPLATE
+# =============================================================================
+# This template generates the main chezmoi configuration file (.chezmoi.toml)
+# It prompts for user preferences and sets up the dotfiles environment
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# INTERACTIVE SETUP VARIABLES
+# -----------------------------------------------------------------------------
+# Core configuration prompts that determine the behavior of the dotfiles
+
 {{- $use_secrets := promptBoolOnce . "use_secrets" "Use secrets from 1Password? (true/false)" -}}
 {{- $git_dir := promptStringOnce . "git_dir" "Git directory where your projects are located (e.g. code):" -}}
 {{- $work_computer := promptBoolOnce . "work_computer" "Is this a work computer for daily driving? (true/false)" -}}
 {{- $is_ci_workflow := promptBoolOnce . "is_ci_workflow" "Is this a CI workflow? (true/false)" -}}
 
-# ----------------------------------------------------------------------------- # 1PASSWORD
-CREDENTIALS SETUP # ----------------------------------------------------------------------------- #
-Collect 1Password account information when secrets are enabled
+# -----------------------------------------------------------------------------
+# 1PASSWORD CREDENTIALS SETUP
+# -----------------------------------------------------------------------------
+# Collect 1Password account information when secrets are enabled
+
 {{- $personal_1p_account := "" -}}
 {{- $personal_vault_name := "" -}}
 {{- $work_1p_account := "" -}}
 {{- $work_vault_name := "" -}}
 
 {{- if $use_secrets -}}
-  {{- $personal_1p_account = promptStringOnce . "personal_1p_account" "Personal 1Password account (email or short name):" -}}
-  {{- $personal_vault_name = promptStringOnce . "personal_vault_name" "Personal 1Password vault name:" -}}
+{{- $personal_1p_account = promptStringOnce . "personal_1p_account" "Personal 1Password account (email or short name):" -}}
+{{- $personal_vault_name = promptStringOnce . "personal_vault_name" "Personal 1Password vault name:" -}}
   {{- if $work_computer -}}
-    {{- $work_1p_account = promptStringOnce . "work_1p_account" "Work 1Password account (email or short name):" -}}
-    {{- $work_vault_name = promptStringOnce . "work_vault_name" "Work 1Password vault name:" -}}
+{{- $work_1p_account = promptStringOnce . "work_1p_account" "Work 1Password account (email or short name):" -}}
+{{- $work_vault_name = promptStringOnce . "work_vault_name" "Work 1Password vault name:" -}}
   {{- end -}}
 {{- end -}}
 
-# ============================================================================= # CHEZMOI DATA
-CONFIGURATION # ============================================================================= #
-Template variables available to all chezmoi templates [data] # Personal information git_name =
-'David D Lawson' gh_user = "ddlaws0n" # Directory structure git_dir =
-"{{ .chezmoi.homeDir }}/{{ $git_dir }}"
+# =============================================================================
+# CHEZMOI DATA CONFIGURATION
+# =============================================================================
+# Template variables available to all chezmoi templates
+
+[data]
+# Personal information
+git_name = 'David D Lawson'
+gh_user = "ddlaws0n"
+
+# Directory structure
+git_dir = "{{ .chezmoi.homeDir }}/{{ $git_dir }}"
 {{- if $work_computer }}
-  git_workdir = "{{ .chezmoi.homeDir }}/{{ $git_dir }}/work"
+git_workdir = "{{ .chezmoi.homeDir }}/{{ $git_dir }}/work"
 {{- end }}
 
-# Environment flags use_secrets =
-{{ $use_secrets }}
-is_ci_workflow =
-{{ $is_ci_workflow }}
-work_computer =
-{{ $work_computer }}
+# Environment flags
+use_secrets = {{ $use_secrets }}
+is_ci_workflow = {{ $is_ci_workflow }}
+work_computer = {{ $work_computer }}
 
 # 1Password account information (when secrets are enabled)
 {{- if $use_secrets }}
-  personal_1p_account =
-  {{ $personal_1p_account | quote }}
-  personal_vault_name =
-  {{ $personal_vault_name | quote }}
+personal_1p_account = {{ $personal_1p_account | quote }}
+personal_vault_name = {{ $personal_vault_name | quote }}
   {{- if $work_computer }}
-    work_1p_account =
-    {{ $work_1p_account | quote }}
-    work_vault_name =
-    {{ $work_vault_name | quote }}
+work_1p_account = {{ $work_1p_account | quote }}
+work_vault_name = {{ $work_vault_name | quote }}
   {{- end }}
 {{- end }}
 
-# ============================================================================= # CHEZMOI TOOL
-CONFIGURATION # ============================================================================= #
------------------------------------------------------------------------------ # EDITOR CONFIGURATION
-# ----------------------------------------------------------------------------- # Default editor for
-chezmoi edit commands [edit] command = "code" args = ["-r", "--wait"] # Reuse window and wait for
-file to close # ----------------------------------------------------------------------------- # FILE
-MANAGEMENT # ----------------------------------------------------------------------------- #
-Configure how chezmoi handles adding and comparing files [add] secrets = "warning" # Warn when
-adding files that might contain secrets [diff] pager = "delta" # Use delta for better diff
-visualization exclude = ["scripts"] # Don't track changes to scripts directory #
------------------------------------------------------------------------------ # TEMPLATE ENGINE #
------------------------------------------------------------------------------ # Configure Go
-template processing behavior [template] options = ["missingkey=zero"] # Return zero value for
-missing template keys #
------------------------------------------------------------------------------ # 1PASSWORD
-INTEGRATION (Optional) #
------------------------------------------------------------------------------ # Enable 1Password CLI
-integration when secrets are used
+# =============================================================================
+# CHEZMOI TOOL CONFIGURATION
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# EDITOR CONFIGURATION
+# -----------------------------------------------------------------------------
+# Default editor for chezmoi edit commands
+[edit]
+command = "code"
+args = ["-r", "--wait"]  # Reuse window and wait for file to close
+
+# -----------------------------------------------------------------------------
+# FILE MANAGEMENT
+# -----------------------------------------------------------------------------
+# Configure how chezmoi handles adding and comparing files
+[add]
+secrets = "warning"  # Warn when adding files that might contain secrets
+
+[diff]
+pager = "delta"           # Use delta for better diff visualization
+exclude = ["scripts"]     # Don't track changes to scripts directory
+
+# -----------------------------------------------------------------------------
+# TEMPLATE ENGINE
+# -----------------------------------------------------------------------------
+# Configure Go template processing behavior
+[template]
+options = ["missingkey=zero"]  # Return zero value for missing template keys
+
+# -----------------------------------------------------------------------------
+# 1PASSWORD INTEGRATION (Optional)
+# -----------------------------------------------------------------------------
+# Enable 1Password CLI integration when secrets are used
 {{- if $use_secrets }}
-  [onepassword] mode = "account" # Use account-based authentication
+[onepassword]
+mode = "account"  # Use account-based authentication
 {{- end }}

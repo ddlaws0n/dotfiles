@@ -3,6 +3,14 @@
 .chezmoidata/
 .chezmoitemplates/
 
+# Main config template (prettier breaks TOML+template syntax)
+home/.chezmoi.toml.tmpl
+
+# Templates that have complex TOML structure
+home/dot_config/marimo/marimo.toml.tmpl
+home/dot_config/neatfile/config.toml
+home/dot_config/mise/config.toml
+
 # Lock files
 *.lock
 bun.lock
