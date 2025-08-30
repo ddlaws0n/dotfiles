@@ -39,7 +39,7 @@ $line_break\
 $character\
 """
 
-palette = 'default'
+palette = 'gruvbox_light'
 
 [palettes.default]
 
@@ -411,7 +411,7 @@ command = """
 # Set env variables if you want to use layout aliases (in uppercase)
 #     export STARSHIP_COCKPIT_KEYBOARD_LAYOUT_ABC=ENG
 #     export STARSHIP_COCKPIT_KEYBOARD_LAYOUT_UKRAINIAN=UKR
-# 
+#
 # Implementations:
 #     macOS
 

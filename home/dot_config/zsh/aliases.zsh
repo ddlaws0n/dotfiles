@@ -131,6 +131,50 @@ zshconfig() {
     fi
 }
 
+# 1PASSWORD SECRET MANAGEMENT
+# Secure command execution with secrets loaded from 1Password
+alias runwithsecrets='op run --env-file="$HOME/.local/share/secrets/secrets.env" --'
+alias rwsecrets='runwithsecrets'  # Short alias
+alias opsecrets='op run --env-file="$HOME/.local/share/secrets/secrets.env" --'
+
+# GitHub Actions & Claude Code setup
+alias setup-cc='op run --env-file="$HOME/.local/share/secrets/secrets.env" -- setup-cc'
+alias setup-claude='setup-cc'  # Alternative alias
+
+# Helper function to run commands with specific secret categories
+runwithwork() {
+    if [[ ! -f "$HOME/.local/share/secrets/secrets-work.env" ]]; then
+        echo "Work secrets file not found. Using main secrets file." >&2
+        runwithsecrets "$@"
+    else
+        op run --env-file="$HOME/.local/share/secrets/secrets-work.env" -- "$@"
+    fi
+}
+
+# Validate secrets are accessible
+checksecrets() {
+    echo "Checking 1Password CLI authentication..."
+    if ! command -v op &> /dev/null; then
+        echo "❌ 1Password CLI not installed"
+        return 1
+    fi
+
+    if ! op account get &> /dev/null; then
+        echo "❌ 1Password CLI not authenticated. Run: op signin"
+        return 1
+    fi
+
+    echo "✅ 1Password CLI authenticated"
+
+    if [[ -f "$HOME/.local/share/secrets/secrets.env" ]]; then
+        echo "✅ Secrets environment file exists"
+        echo "Usage: runwithsecrets your-command [args]"
+    else
+        echo "❌ Secrets environment file not found. Run: chezmoi apply"
+        return 1
+    fi
+}
+
 # USEFUL FUNCTIONS (merged from functions.zsh)
 
 # Function to update all plugins and packages
@@ -181,7 +225,7 @@ mkproject() {
     echo "Usage: mkproject <project-name>"
     return 1
   fi
-  
+
   mkdir "$name" && cd "$name"
   git init
   echo "# $name" > README.md

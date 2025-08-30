@@ -56,11 +56,46 @@ Benefits: Fast shell startup, clear responsibilities, easy maintenance.
    chezmoi apply
    ```
 
-3. **Install packages:**
+3. **Install packages and dependencies:**
 
    ```sh
    ./setup.sh
+   bun install  # Install prettier and formatting tools
    ```
+
+## Git Hooks & Code Quality 🔍
+
+This repository uses **lefthook** for fast, reliable git hooks that ensure code quality:
+
+### Features
+
+- **Template Validation**: Native chezmoi template validation
+- **Code Formatting**: Prettier with go-template support for `.tmpl` files
+- **Secret Detection**: Quick checks for hardcoded secrets/credentials
+- **State Verification**: Ensures chezmoi state consistency
+- **Merge Conflict Detection**: Prevents accidental commits with conflicts
+
+### Usage
+
+```sh
+# Hooks are automatically installed with lefthook
+# Run manually:
+lefthook run pre-commit    # Run all pre-commit checks
+lefthook run pre-push      # Run pre-push validation
+
+# Skip hooks when needed:
+LEFTHOOK=0 git commit      # Skip all hooks
+LEFTHOOK_EXCLUDE=format git commit  # Skip specific hooks
+
+# Format templates:
+bunx prettier --write **/*.tmpl
+```
+
+### Configuration
+
+- `lefthook.yml` - Simplified hook configuration (~50 lines vs 260+ in old setup)
+- `.prettierrc` - Prettier configuration with go-template plugin
+- `scripts/quick-validate.sh` - Consolidated validation script
 
 ---
 

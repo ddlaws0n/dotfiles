@@ -1,7 +1,7 @@
 [user]
 	name = "{{ .git_name }}"
-    email = "{{- onepasswordRead .my.git_email .personal_1p_account }}"
-    signingkey = "{{- onepasswordRead .my.git_signingkey .personal_1p_account }}"
+{{ if and .use_secrets (not .is_ci_workflow) }}    email = "{{ if .secrets }}{{ onepasswordRead .secrets.git_email .personal_1p_account }}{{ end }}"
+    signingkey = "{{ if .secrets }}{{ onepasswordRead .secrets.git_signingkey .personal_1p_account }}{{ end }}"{{ end }}
 
 [gpg]
 	format = ssh

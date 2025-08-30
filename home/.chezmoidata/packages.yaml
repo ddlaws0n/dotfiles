@@ -1,0 +1,274 @@
+# Declarative package management for chezmoi scripts
+# Organized by tool type and usage category
+
+taps:
+  - "anchordotdev/tap"
+  - "hashicorp/tap"
+  - "jwbargsten/misc"
+  - "oven-sh/bun"
+  - "smudge/smudge"
+  - "tursodatabase/tap"
+
+homebrew:
+  # Core system utilities
+  core_system:
+    - coreutils
+    - defaultbrowser
+    - gnupg
+    - gnutls
+    - unbound
+
+  # Development tools
+  development:
+    version_control:
+      - git-filter-repo
+      - lefthook
+    config_management:
+      - chezmoi
+      - just
+    language_tools:
+      - mise
+
+  # Shell & terminal enhancements
+  shell:
+    core:
+      - antidote
+      - starship
+    cli_tools:
+      - fzf
+      - bat
+      - ripgrep
+      - git-delta
+      - gh
+      - jq
+    system_tools:
+      - eza
+      - tre-command
+      - usage
+      - tree
+
+  # Data & file processing
+  data_processing:
+    - jsonnet
+    - pandoc
+
+  # Communication & productivity
+  productivity:
+    - gmailctl
+
+  # Security & privacy
+  security:
+    - anchordotdev/tap/anchor
+    - smudge/smudge/nightlight
+
+  # Database & storage
+  database:
+    - tursodatabase/tap/turso
+
+  # AI & machine learning
+  ai:
+    - ollama
+    - whisper-cpp
+
+  # System utilities
+  system:
+    - jwbargsten/misc/defbro
+    - qemu
+    - glib
+
+  # CI/CD
+  cicd:
+    - act
+
+casks:
+  # Security & authentication
+  security:
+    - 1password-cli
+
+  # Browsers & web
+  browsers:
+    - arc
+
+  # Development tools
+  development:
+    - visual-studio-code
+    - ghostty
+    - warp
+    - gitbutler
+
+  # Cloud & DevOps
+  devops:
+    - orbstack
+
+  # AI & productivity
+  ai_productivity:
+    - claude
+    - raycast
+
+  # Design & media
+  media:
+    - iina
+    - imageoptim
+
+  # System utilities
+  system_utils:
+    - bettermouse
+    - pearcleaner
+    - onyx
+    - openinterminal
+
+  # File management & storage
+  files:
+    - google-drive
+    - qspace-pro
+    - keka
+    - kekaexternalhelper
+
+  # Calendar & time
+  calendar:
+    - notion-calendar
+    - itsycal
+
+  # Screenshots & screen recording
+  screenshot:
+    - shottr
+
+  # Music & entertainment
+  music:
+    - spotify
+
+  # Virtualization
+  virtualization:
+    - virtualbuddy
+
+fonts:
+  - font-fira-code
+  - font-fira-code-nerd-font
+  - font-fira-mono-nerd-font
+  - font-hack-nerd-font
+  - font-jetbrains-mono
+  - font-monaspace
+
+vscode_extensions:
+  # Project management
+  project:
+    - alefragnani.project-manager
+
+  # UI & icons
+  ui:
+    - antfu.iconify
+    - catppuccin.catppuccin-vsc
+    - catppuccin.catppuccin-vsc-icons
+    - thang-nm.catppuccin-perfect-icons
+
+  # Frameworks & languages
+  languages:
+    - antfu.vite
+    - astro-build.astro-vscode
+    - golang.go
+    - ms-python.python
+    - ms-python.debugpy
+    - ms-python.vscode-pylance
+    - charliermarsh.ruff
+
+  # Web development
+  web:
+    - bradlc.vscode-tailwindcss
+    - christian-kohler.npm-intellisense
+    - csstools.postcss
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode
+    - formulahendry.auto-rename-tag
+
+  # Markdown & documentation
+  markdown:
+    - bierner.github-markdown-preview
+    - bierner.markdown-checkbox
+    - bierner.markdown-emoji
+    - bierner.markdown-mermaid
+    - bierner.markdown-preview-github-styles
+    - yzhang.markdown-all-in-one
+    - unifiedjs.vscode-mdx
+
+  # Code quality & formatting
+  quality:
+    - biomejs.biome
+    - editorconfig.editorconfig
+    - usernamehw.errorlens
+    - yoavbls.pretty-ts-errors
+
+  # Git & GitHub
+  git:
+    - github.copilot
+    - github.copilot-chat
+    - github.github-vscode-theme
+    - github.vscode-github-actions
+    - github.vscode-pull-request-github
+
+  # DevOps & infrastructure
+  devops:
+    - docker.docker
+    - hashicorp.terraform
+
+  # Configuration & data
+  config:
+    - redhat.vscode-yaml
+    - tamasfe.even-better-toml
+    - grafana.vscode-jsonnet
+    - romantomjak.go-template
+    - skellock.just
+
+  # Testing
+  testing:
+    - ms-playwright.playwright
+    - vitest.explorer
+
+  # AI & LLM
+  ai:
+    - openai.chatgpt
+    - rooveterinaryinc.roo-cline
+    - saoudrizwan.claude-dev
+
+  # Specialized tools
+  specialized:
+    - jorcelinojunior.chezmoi-tools
+    - wizcloud.wiz-vscode
+    - mattfoulks.har-analyzer
+    - mquandalle.graphql
+    - jock.svg
+
+  # Themes & UI
+  themes:
+    - ms-vscode.theme-materialkit
+
+# Dependencies for mise (runtime tools)
+mise_tools:
+  # These are managed by mise for version management
+  essential:
+    - node@lts
+    - python@3.12
+    - go@latest
+  development:
+    - uv
+    - bun
+    - deno
+  infrastructure:
+    - terraform
+    - kubectl
+  ai:
+    - claude
+
+# Antidote plugins (from .zsh_plugins.txt)
+zsh_plugins:
+  core:
+    - ohmyzsh/ohmyzsh path:lib/history.zsh
+    - ohmyzsh/ohmyzsh path:lib/completion.zsh
+    - ohmyzsh/ohmyzsh path:lib/key-bindings.zsh
+  enhancements:
+    - zsh-users/zsh-syntax-highlighting
+    - zsh-users/zsh-autosuggestions
+    - Aloxaf/fzf-tab
+  utilities:
+    - ohmyzsh/ohmyzsh path:plugins/git
+    - ohmyzsh/ohmyzsh path:plugins/sudo
+    - ohmyzsh/ohmyzsh path:plugins/extract

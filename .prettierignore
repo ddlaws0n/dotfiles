@@ -1,0 +1,11 @@
+# Chezmoi specific files
+.chezmoiroot
+.chezmoidata/
+.chezmoitemplates/
+
+# Lock files
+*.lock
+bun.lock
+
+# Generated files
+node_modules/

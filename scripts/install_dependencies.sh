@@ -26,33 +26,15 @@ else
   echo "zsh is already installed."
 fi
 
-# Install zinit
-echo "Checking for zinit..."
-if ! is_installed zinit; then
-  echo "Installing zinit..."
-  brew install zinit
-  echo "zinit installed successfully."
-  echo "Ensuring zinit is sourced in ~/.zshrc..."
-  # Add zinit sourcing to .zshrc if not already present
-  # This path comes from `brew info zinit`
-  ZINIT_SOURCE_LINE="source \$HOMEBREW_PREFIX/opt/zinit/zinit.zsh"
-  if ! grep -qF -- "$ZINIT_SOURCE_LINE" ~/.zshrc >/dev/null 2>&1; then
-    echo "$ZINIT_SOURCE_LINE" >> ~/.zshrc
-    echo "Added zinit source to ~/.zshrc."
-  else
-    echo "zinit source already in ~/.zshrc."
-  fi
+# Install antidote
+echo "Checking for antidote..."
+if ! is_installed antidote; then
+  echo "Installing antidote..."
+  brew install antidote
+  echo "antidote installed successfully."
+  echo "Note: antidote will be configured via chezmoi dotfiles, not directly in ~/.zshrc"
 else
-  echo "zinit is already installed."
-  # Still ensure it's sourced, in case it was removed from .zshrc
-  echo "Ensuring zinit is sourced in ~/.zshrc..."
-  ZINIT_SOURCE_LINE="source \$HOMEBREW_PREFIX/opt/zinit/zinit.zsh"
-  if ! grep -qF -- "$ZINIT_SOURCE_LINE" ~/.zshrc >/dev/null 2>&1; then
-    echo "$ZINIT_SOURCE_LINE" >> ~/.zshrc
-    echo "Added zinit source to ~/.zshrc."
-  else
-    echo "zinit source already in ~/.zshrc."
-  fi
+  echo "antidote is already installed."
 fi
 
 # Install uv

@@ -38,7 +38,7 @@ if command -v mise &> /dev/null && mise list bun &> /dev/null; then
   export BUN_INSTALL="$(mise where bun 2>/dev/null || echo "$HOME/.bun")"
 fi
 
-# Golang - mise manages the PATH, but some tools expect GOPATH  
+# Golang - mise manages the PATH, but some tools expect GOPATH
 if command -v mise &> /dev/null && mise list go &> /dev/null; then
   export GOPATH="$HOME/go"  # Standard location for Go workspace
 fi
@@ -51,10 +51,10 @@ fi
 export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
 {{ end }}
 
-{{ if .use_secrets }}
+{{ if and .use_secrets (not .is_ci_workflow) }}
 # API Keys
-export OPENROUTER_API_KEY="{{ onepasswordRead .my.openrouter_api_key .personal_1p_account }}"
-export FIRECRAWL_API_KEY="{{ onepasswordRead .my.firecrawl_api_key .personal_1p_account }}"
+export OPENROUTER_API_KEY="{{ if .secrets }}{{ onepasswordRead .secrets.openrouter_api_key .personal_1p_account }}{{ end }}"
+export FIRECRAWL_API_KEY="{{ if .secrets }}{{ onepasswordRead .secrets.firecrawl_api_key .personal_1p_account }}{{ end }}"
 {{ end }}
 
 ## Editor preferences
