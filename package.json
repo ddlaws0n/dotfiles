@@ -1,0 +1,27 @@
+{
+  "name": "chezmoi-dotfiles",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "David D Lawson's chezmoi-managed dotfiles with formatting and validation",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:templates": "prettier --write **/*.tmpl",
+    "validate": "lefthook run pre-commit",
+    "install-hooks": "lefthook install"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-plugin-go-template": "^0.0.15",
+    "prettier-plugin-toml": "^2.0.6"
+  },
+  "keywords": [
+    "dotfiles",
+    "chezmoi",
+    "configuration",
+    "macos"
+  ],
+  "author": "David D Lawson",
+  "license": "MIT"
+}

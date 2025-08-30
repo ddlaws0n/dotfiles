@@ -1,0 +1,6 @@
+# Test template for lefthook validation
+git_dir: {{ .git_dir }}
+work_computer: {{ .work_computer }}
+{{ if .use_secrets }}
+# This is a secret template section
+{{ end }}

@@ -1,8 +1,34 @@
-date_format = "%Y-%m-%d - "
+# Global settings
+# Override on a per project basis in the [projects] section if needed.
+
+# How to interpret ambiguous date formats such as 03-04-12.
+# Defaults to US format with month first.
+# options "day", "month", "year"
+date_first = "year"
 date_region = "EU"
-ignore_dotfiles = true
+
+# date format
+# If specified, the date will be added to the filename following this format.
+# See https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes for details on how to specify a format.
+date_format        = ""
+
+# Ignores dotfiles (files that start with a period) when cleaning a directory.
+# true or false
+ignore_dotfiles    = true
+
+# File names matching this regex will be ignored
 ignore_file_regex = '\\.(json|py|js|ts|tsx|jsx|html|css|scss|less|md|yaml|yml|xml|log|tmp|bak)$'
-ignored_files = []
+
+# List of file names to ignore
+# Useful if there are consistently recurring files that you don't want to clean.
+ignored_files      = []
+
+# Where to insert the date.
+# "before" or "after"
+insert_location    = "before"
+
+# Force the casing of certain words.
+# Useful for acronyms or proper nouns such as 'iMac', 'CEO', or 'John'
 match_case_list = [
     "BWS",
     "CEO",
@@ -38,14 +64,48 @@ match_case_list = [
     "YYYY",
     "ZD",
 ]
-overwrite_existing = false
-separator = "Space"
-split_words = true
-stopwords = []
-strip_stopwords = true
-transform_case = "title"
 
+# Overwrite existing files. true or false.
+# If false, a backup of the original file will be created before a new file is written.
+overwrite_existing = false
+
+# Separator to use between words.
+# Options: "ignore", "underscore", "space", "dash".
+# "ignore" does it's best to keep the original separator.
+separator          = "dash"
+
+# Split CamelCase words into separate words.
+# true or false
+split_words        = true
+
+# List of specific stopwords to be stripped from filenames in
+# addition to the default English stopwords
+stopwords          = []
+
+# Strip stopwords from filenames.
+# true or false
+strip_stopwords    = true
+
+# Transform the case of the filename.
+# Options: "ignore", "lower", "upper", "title", "sentence"
+transform_case     = "lower"
+
+
+# Override the global settings for specific projects and tell neatfile
+# how to organize files into a directory tree.
 [projects]
     [projects.personal]
         path = "~/Documents"
-        type = ""
+        # The type of project.
+        # Options: "jd" for Johnny Decimal, "folder" for a folder structure
+        type = "folder"
+
+        # The depth of folders to index beneath the project's root path
+        depth = 2
+
+        # Default configuration values specified above can be overridden here on a per project basis
+
+      [projects.gdrive]
+        path = "~/Google Drive'"
+        type = "folder"
+        depth = 2

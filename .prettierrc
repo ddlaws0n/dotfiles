@@ -1,0 +1,34 @@
+{
+  "plugins": ["prettier-plugin-go-template", "prettier-plugin-toml"],
+  "goTemplateBracketSpacing": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "*.tmpl",
+      "options": {
+        "parser": "go-template"
+      }
+    },
+    {
+      "files": ["*.yml", "*.yaml"],
+      "options": {
+        "parser": "yaml"
+      }
+    },
+    {
+      "files": "*.toml",
+      "options": {
+        "parser": "toml"
+      }
+    }
+  ]
+}

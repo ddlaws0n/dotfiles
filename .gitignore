@@ -1,4 +1,13 @@
+# Override vscode/
 !.vscode/
+
+# Local files and dirs
+*local*
+
+# Node.js dependencies
+node_modules/
+*.tgz
+*.tar.gz
 
 # Temporary development files (keep untracked)
 .actrc

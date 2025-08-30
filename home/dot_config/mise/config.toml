@@ -9,12 +9,14 @@ go   = "latest"
 node = "lts"
 pnpm = "latest"
 uv   = "latest"
+python = "latest"
 
 # Packages
 "npm:@anthropic-ai/claude-code" = "latest"
 "npm:@google/gemini-cli"        = "latest"
 "npm:repomix"                   = "latest"
 "npm:task-master-ai"            = "latest"
+"npm:ccusage"                   = "latest"
 
 [env]
 _.path = ['{{config_root}}/node_modules/.bin']

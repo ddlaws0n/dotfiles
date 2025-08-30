@@ -37,7 +37,7 @@
             "command": "npx",
             "args": ["-y", "@chatmcp/server-perplexity-ask"],
             "env": {
-                "PERPLEXITY_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.perplexity_api_key "my" }}{{- else }}{{ onepasswordRead .my.perplexity_api_key "my" }}{{- end }}"
+                "PERPLEXITY_API_KEY": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.perplexity_api_key .personal_1p_account }}{{ end }}"
             },
             "alwaysAllow": ["perplexity_ask"]
         },
@@ -46,14 +46,14 @@
             "args": [
                 "-y",
                 "@21st-dev/magic@latest",
-                "API_KEY=\"{{- if .secrets }}{{ onepasswordRead .secrets.twenty_one_dev_api_key "my" }}{{- else }}{{ onepasswordRead .my.twenty_one_dev_api_key "my" }}{{- end }}\""
+                "API_KEY=\"{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.twenty_one_dev_api_key .personal_1p_account }}{{ end }}\""
             ]
         },
         "firecrawl-mcp": {
             "command": "npx",
             "args": ["-y", "firecrawl-mcp"],
             "env": {
-                "FIRECRAWL_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.firecrawl_api_key "my" }}{{- else }}{{ onepasswordRead .my.firecrawl_api_key "my" }}{{- end }}"
+                "FIRECRAWL_API_KEY": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.firecrawl_api_key .personal_1p_account }}{{ end }}"
             },
             "alwaysAllow": ["firecrawl_search", "firecrawl_scrape", "firecrawl_map"]
         },
@@ -61,8 +61,8 @@
             "command": "npx",
             "args": ["-y", "--package=task-master-ai", "task-master-ai"],
             "env": {
-                "ANTHROPIC_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.anthropic_api_key "my" }}{{- else }}{{ onepasswordRead .my.anthropic_api_key "my" }}{{- end }}",
-                "PERPLEXITY_API_KEY": "{{- if .secrets }}{{ onepasswordRead .secrets.perplexity_api_key "my" }}{{- else }}{{ onepasswordRead .my.perplexity_api_key "my" }}{{- end }}"
+                "ANTHROPIC_API_KEY": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.anthropic_api_key .personal_1p_account }}{{ end }}",
+                "PERPLEXITY_API_KEY": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.perplexity_api_key .personal_1p_account }}{{ end }}"
             }
         },
         "atlas-mcp-server-stdio": {
@@ -70,8 +70,8 @@
             "args": ["{{ .git_dir }}/mcp/atlas-mcp-server/dist/index.js"],
             "env": {
                 "NEO4J_URI": "bolt://localhost:7687",
-                "NEO4J_USER": "{{- if .secrets }}{{ onepasswordRead .secrets.atlas_mcp_user "my" }}{{- else }}{{ onepasswordRead .my.atlas_mcp_user "my" }}{{- end }}",
-                "NEO4J_PASSWORD": "{{- if .secrets }}{{ onepasswordRead .secrets.atlas_mcp_password "my" }}{{- else }}{{ onepasswordRead .my.atlas_mcp_password "my" }}{{- end }}",
+                "NEO4J_USER": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.atlas_mcp_user .personal_1p_account }}{{ end }}",
+                "NEO4J_PASSWORD": "{{ if and .use_secrets (not .is_ci_workflow) .secrets }}{{ onepasswordRead .secrets.atlas_mcp_password .personal_1p_account }}{{ end }}",
                 "LOG_LEVEL": "info",
                 "NODE_ENV": "production",
                 "MCP_TRANSPORT_TYPE": "stdio"

@@ -1,0 +1,103 @@
+# Simplified Lefthook configuration for chezmoi dotfiles
+# Replaces complex pre-commit setup with native chezmoi validation
+
+min_version: 1.12.0
+colors: true
+
+# Skip hooks entirely with: LEFTHOOK=0 git commit
+# Skip specific hooks with: LEFTHOOK_EXCLUDE=format,templates git commit
+
+pre-commit:
+  # Parallel execution for faster performance
+  parallel: true
+
+  commands:
+    # Format template files with Prettier
+    format:
+      glob: "*.tmpl"
+      run: |
+        if command -v bunx >/dev/null 2>&1; then
+          bunx prettier --check {staged_files}
+        elif command -v npx >/dev/null 2>&1; then
+          npx prettier --check {staged_files}
+        else
+          echo "⚠️  prettier not found, skipping formatting check"
+        fi
+
+    # Validate chezmoi templates using native chezmoi
+    templates:
+      glob: "*.tmpl"
+      run: |
+        echo "🧪 Validating chezmoi templates..."
+        for file in {staged_files}; do
+          echo "  Checking $file..."
+          if ! chezmoi execute-template --init \
+            --promptString "git_dir=test" \
+            --promptBool "work_computer=false,is_ci_workflow=true,use_secrets=false" \
+            < "$file" >/dev/null 2>&1; then
+            echo "❌ Template validation failed: $file"
+            exit 1
+          fi
+        done
+        echo "✅ All templates valid"
+
+    # Quick secret and quality checks
+    quality:
+      glob: "*"
+      exclude: "*.md|private_*|*.lock|*.log"
+      run: "./scripts/quick-validate.sh {staged_files}"
+
+    # Git merge conflict detection
+    conflicts:
+      glob: "*"
+      run: |
+        if grep -l '^<<<<<<< \|^=======$\|^>>>>>>> ' {staged_files} 2>/dev/null; then
+          echo "❌ Found merge conflict markers in files above"
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    # Verify chezmoi state consistency
+    chezmoi-verify:
+      run: |
+        if command -v chezmoi >/dev/null 2>&1; then
+          echo "🔍 Verifying chezmoi state consistency..."
+          if ! chezmoi verify 2>/dev/null; then
+            echo "❌ chezmoi verify failed - repository state is inconsistent"
+            echo "Run 'chezmoi status' to see differences"
+            exit 1
+          else
+            echo "✅ chezmoi state is consistent"
+          fi
+        fi
+
+    # Run comprehensive template tests
+    test-templates:
+      run: |
+        if [[ -x "./tests/test-templates.sh" ]]; then
+          echo "🧪 Running comprehensive template tests..."
+          ./tests/test-templates.sh
+        else
+          echo "⚠️  test-templates.sh not found or not executable"
+        fi
+
+post-merge:
+  commands:
+    # Notify about potential actions needed
+    notify:
+      run: |
+        echo "📋 Post-merge recommendations:"
+        if git diff HEAD~1 HEAD --name-only | grep -q -E "(Brewfile|mise|requirements\.txt|package\.json|Cargo\.toml)"; then
+          echo "  📦 Dependencies may have changed - consider updating"
+        fi
+        if git diff HEAD~1 HEAD --name-only | grep -q "\.tmpl$"; then
+          echo "  🔄 Templates changed - consider running:"
+          echo "    chezmoi diff"
+          echo "    chezmoi apply"
+        fi
+
+# Reduce noise in output
+skip_output:
+  - meta
+  - summary

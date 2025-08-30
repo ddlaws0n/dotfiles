@@ -1,176 +1,59 @@
-{
-  "providerProfiles": {
-    "currentApiConfigName": "GeminiThinking",
-    "apiConfigs": {
-      "default": {
-        "apiProvider": "requesty",
-        "apiModelId": "anthropic/claude-3-7-sonnet-latest",
-        "openRouterApiKey": "",
-        "openRouterModelId": "google/gemini-2.5-pro-preview-03-25",
-        "openAiNativeApiKey": "",
-        "requestyApiKey": "{{- onepasswordRead .my.requesty_api_key .personal_1p_account }}",
-        "requestyModelId": "anthropic/claude-3-7-sonnet-latest",
-        "modelMaxTokens": 32768,
-        "modelTemperature": null,
-        "id": "isgu2tnruj8"
-      },
-      "Thinking": {
-        "apiProvider": "requesty",
-        "apiModelId": "cline/claude-3-7-sonnet:16384",
-        "openRouterApiKey": "",
-        "openRouterModelId": "google/gemini-2.5-pro-preview-03-25",
-        "openAiNativeApiKey": "",
-        "requestyApiKey": "{{- onepasswordRead .my.requesty_api_key .personal_1p_account }}",
-        "requestyModelId": "cline/claude-3-7-sonnet:16384",
-        "modelMaxTokens": 32768,
-        "fuzzyMatchThreshold": 0.965,
-        "modelTemperature": 0.7,
-        "id": "nnwaa7jzm9m"
-      },
-      "Instruct": {
-        "apiProvider": "requesty",
-        "apiModelId": "anthropic/claude-3-7-sonnet-latest",
-        "openRouterApiKey": "",
-        "openRouterModelId": "google/gemini-2.5-pro-preview-03-25",
-        "openAiNativeApiKey": "",
-        "requestyApiKey": "{{- onepasswordRead .my.requesty_api_key .personal_1p_account }}",
-        "requestyModelId": "anthropic/claude-3-7-sonnet-latest",
-        "modelMaxTokens": 32768,
-        "id": "uadpg21mzzq"
-      },
-      "GeminiThinking": {
-        "apiProvider": "gemini",
-        "apiModelId": "gemini-2.5-pro-exp-03-25",
-        "openRouterApiKey": "",
-        "openRouterModelId": "google/gemini-2.5-pro-preview-03-25",
-        "geminiApiKey": "{{- onepasswordRead .my.gemini_api_key .personal_1p_account }}",
-        "googleGeminiBaseUrl": "",
-        "openAiNativeApiKey": "",
-        "modelMaxTokens": 32768,
-        "fuzzyMatchThreshold": 0.96,
-        "modelTemperature": 0.7,
-        "rateLimitSeconds": 1,
-        "id": "vqfoxb6b7hh"
-      }
-    },
-    "modeApiConfigs": {
-      "code": "vqfoxb6b7hh",
-      "architect": "vqfoxb6b7hh",
-      "ask": "vqfoxb6b7hh",
-      "debug": "vqfoxb6b7hh",
-      "backend-dev": "isgu2tnruj8",
-      "dba": "isgu2tnruj8",
-      "orchestrator": "vqfoxb6b7hh",
-      "researcher": "isgu2tnruj8",
-      "CodeShortRules": "isgu2tnruj8",
-      "designer": "isgu2tnruj8",
-      "intern": "isgu2tnruj8",
-      "junior": "isgu2tnruj8",
-      "meta-orchestrator-swarm-director": "vqfoxb6b7hh",
-      "orchestrator-project-initialization": "isgu2tnruj8",
-      "architect-highlevel-module": "vqfoxb6b7hh",
-      "sparc": "vqfoxb6b7hh",
-      "spec-pseudocode": "vqfoxb6b7hh",
-      "tdd": "vqfoxb6b7hh",
-      "security-review": "vqfoxb6b7hh",
-      "docs-writer": "vqfoxb6b7hh",
-      "integration": "vqfoxb6b7hh",
-      "post-deployment-monitoring-mode": "vqfoxb6b7hh",
-      "refinement-optimization-mode": "vqfoxb6b7hh",
-      "devops": "vqfoxb6b7hh",
-      "tutorial": "vqfoxb6b7hh"
-    },
-    "migrations": {
-      "rateLimitSecondsMigrated": true,
-      "diffSettingsMigrated": true,
-      "openAiHeadersMigrated": true
-    }
-  },
-  "globalSettings": {
-    "lastShownAnnouncementId": "may-06-2025-3-16",
-    "autoApprovalEnabled": true,
-    "alwaysAllowReadOnly": true,
-    "alwaysAllowReadOnlyOutsideWorkspace": false,
-    "alwaysAllowWrite": true,
-    "alwaysAllowWriteOutsideWorkspace": false,
-    "writeDelayMs": 1000,
-    "alwaysAllowBrowser": true,
-    "alwaysApproveResubmit": true,
-    "requestDelaySeconds": 5,
-    "alwaysAllowMcp": true,
-    "alwaysAllowModeSwitch": true,
-    "alwaysAllowSubtasks": true,
-    "alwaysAllowExecute": true,
-    "allowedCommands": [
-      "pnpm test",
-      "pnpm install",
-      "tsc",
-      "git log",
-      "git diff",
-      "git show",
-      "npm",
-      "npx",
-      "python",
-      "python3",
-      "pytest",
-      "pip",
-      "pip3",
-      "chmod",
-      "mkdir",
-      "curl",
-      "docker",
-      "invoke",
-      "bash",
-      "node",
-      "ls",
-      "set",
-      "$",
-      "$env",
-      "$env:PYTHONPATH",
-      "$env:PYTHONPATH=\".\";",
-      "$env:PYTHONPATH='.'; pytest",
-      "head",
-      "streamlit",
-      "dir",
-      "wc",
-      "git",
-      "conda",
-      "cd",
-      "type"
-    ],
-    "browserToolEnabled": false,
-    "browserViewportSize": "900x600",
-    "screenshotQuality": 75,
-    "remoteBrowserEnabled": false,
-    "enableCheckpoints": true,
-    "ttsEnabled": false,
-    "ttsSpeed": 1,
-    "soundEnabled": false,
-    "soundVolume": 0.5,
-    "maxOpenTabsContext": 10,
-    "maxWorkspaceFiles": 100,
-    "showRooIgnoredFiles": true,
-    "maxReadFileLine": 500,
-    "terminalOutputLineLimit": 1000,
-    "terminalShellIntegrationTimeout": 5000,
-    "terminalShellIntegrationDisabled": false,
-    "terminalCommandDelay": 0,
-    "terminalPowershellCounter": true,
-    "terminalZshClearEolMark": true,
-    "terminalZshOhMy": true,
-    "terminalZshP10k": true,
-    "terminalZdotdir": true,
-    "terminalCompressProgressBar": true,
-    "rateLimitSeconds": 1,
-    "fuzzyMatchThreshold": 0.96,
-    "experiments": {
-      "powerSteering": true
-    },
-    "language": "en",
-    "telemetrySetting": "enabled",
-    "mcpEnabled": false,
-    "enableMcpServerCreation": true,
-    "mode": "code",
-    "customModes": []
-  }
-}
+{ "providerProfiles": { "currentApiConfigName": "GeminiThinking", "apiConfigs": { "default": {
+"apiProvider": "requesty", "apiModelId": "anthropic/claude-3-7-sonnet-latest", "openRouterApiKey":
+"", "openRouterModelId": "google/gemini-2.5-pro-preview-03-25", "openAiNativeApiKey": "",
+"requestyApiKey":
+"{{ if and .use_secrets (not .is_ci_workflow) .secrets }}
+  {{ onepasswordRead .secrets.requesty_api_key .personal_1p_account }}
+{{ end }}",
+"requestyModelId": "anthropic/claude-3-7-sonnet-latest", "modelMaxTokens": 32768,
+"modelTemperature": null, "id": "isgu2tnruj8" }, "Thinking": { "apiProvider": "requesty",
+"apiModelId": "cline/claude-3-7-sonnet:16384", "openRouterApiKey": "", "openRouterModelId":
+"google/gemini-2.5-pro-preview-03-25", "openAiNativeApiKey": "", "requestyApiKey":
+"{{ if and .use_secrets (not .is_ci_workflow) .secrets }}
+  {{ onepasswordRead .secrets.requesty_api_key .personal_1p_account }}
+{{ end }}",
+"requestyModelId": "cline/claude-3-7-sonnet:16384", "modelMaxTokens": 32768, "fuzzyMatchThreshold":
+0.965, "modelTemperature": 0.7, "id": "nnwaa7jzm9m" }, "Instruct": { "apiProvider": "requesty",
+"apiModelId": "anthropic/claude-3-7-sonnet-latest", "openRouterApiKey": "", "openRouterModelId":
+"google/gemini-2.5-pro-preview-03-25", "openAiNativeApiKey": "", "requestyApiKey":
+"{{ if and .use_secrets (not .is_ci_workflow) .secrets }}
+  {{ onepasswordRead .secrets.requesty_api_key .personal_1p_account }}
+{{ end }}",
+"requestyModelId": "anthropic/claude-3-7-sonnet-latest", "modelMaxTokens": 32768, "id":
+"uadpg21mzzq" }, "GeminiThinking": { "apiProvider": "gemini", "apiModelId":
+"gemini-2.5-pro-exp-03-25", "openRouterApiKey": "", "openRouterModelId":
+"google/gemini-2.5-pro-preview-03-25", "geminiApiKey":
+"{{ if and .use_secrets (not .is_ci_workflow) .secrets }}
+  {{ onepasswordRead .secrets.gemini_api_key .personal_1p_account }}
+{{ end }}",
+"googleGeminiBaseUrl": "", "openAiNativeApiKey": "", "modelMaxTokens": 32768, "fuzzyMatchThreshold":
+0.96, "modelTemperature": 0.7, "rateLimitSeconds": 1, "id": "vqfoxb6b7hh" } }, "modeApiConfigs": {
+"code": "vqfoxb6b7hh", "architect": "vqfoxb6b7hh", "ask": "vqfoxb6b7hh", "debug": "vqfoxb6b7hh",
+"backend-dev": "isgu2tnruj8", "dba": "isgu2tnruj8", "orchestrator": "vqfoxb6b7hh", "researcher":
+"isgu2tnruj8", "CodeShortRules": "isgu2tnruj8", "designer": "isgu2tnruj8", "intern": "isgu2tnruj8",
+"junior": "isgu2tnruj8", "meta-orchestrator-swarm-director": "vqfoxb6b7hh",
+"orchestrator-project-initialization": "isgu2tnruj8", "architect-highlevel-module": "vqfoxb6b7hh",
+"sparc": "vqfoxb6b7hh", "spec-pseudocode": "vqfoxb6b7hh", "tdd": "vqfoxb6b7hh", "security-review":
+"vqfoxb6b7hh", "docs-writer": "vqfoxb6b7hh", "integration": "vqfoxb6b7hh",
+"post-deployment-monitoring-mode": "vqfoxb6b7hh", "refinement-optimization-mode": "vqfoxb6b7hh",
+"devops": "vqfoxb6b7hh", "tutorial": "vqfoxb6b7hh" }, "migrations": { "rateLimitSecondsMigrated":
+true, "diffSettingsMigrated": true, "openAiHeadersMigrated": true } }, "globalSettings": {
+"lastShownAnnouncementId": "may-06-2025-3-16", "autoApprovalEnabled": true, "alwaysAllowReadOnly":
+true, "alwaysAllowReadOnlyOutsideWorkspace": false, "alwaysAllowWrite": true,
+"alwaysAllowWriteOutsideWorkspace": false, "writeDelayMs": 1000, "alwaysAllowBrowser": true,
+"alwaysApproveResubmit": true, "requestDelaySeconds": 5, "alwaysAllowMcp": true,
+"alwaysAllowModeSwitch": true, "alwaysAllowSubtasks": true, "alwaysAllowExecute": true,
+"allowedCommands": [ "pnpm test", "pnpm install", "tsc", "git log", "git diff", "git show", "npm",
+"npx", "python", "python3", "pytest", "pip", "pip3", "chmod", "mkdir", "curl", "docker", "invoke",
+"bash", "node", "ls", "set", "$", "$env", "$env:PYTHONPATH", "$env:PYTHONPATH=\".\";",
+"$env:PYTHONPATH='.'; pytest", "head", "streamlit", "dir", "wc", "git", "conda", "cd", "type" ],
+"browserToolEnabled": false, "browserViewportSize": "900x600", "screenshotQuality": 75,
+"remoteBrowserEnabled": false, "enableCheckpoints": true, "ttsEnabled": false, "ttsSpeed": 1,
+"soundEnabled": false, "soundVolume": 0.5, "maxOpenTabsContext": 10, "maxWorkspaceFiles": 100,
+"showRooIgnoredFiles": true, "maxReadFileLine": 500, "terminalOutputLineLimit": 1000,
+"terminalShellIntegrationTimeout": 5000, "terminalShellIntegrationDisabled": false,
+"terminalCommandDelay": 0, "terminalPowershellCounter": true, "terminalZshClearEolMark": true,
+"terminalZshOhMy": true, "terminalZshP10k": true, "terminalZdotdir": true,
+"terminalCompressProgressBar": true, "rateLimitSeconds": 1, "fuzzyMatchThreshold": 0.96,
+"experiments": { "powerSteering": true }, "language": "en", "telemetrySetting": "enabled",
+"mcpEnabled": false, "enableMcpServerCreation": true, "mode": "code", "customModes": [] } }
