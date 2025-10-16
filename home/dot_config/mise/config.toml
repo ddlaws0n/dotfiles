@@ -1,22 +1,46 @@
 [settings]
+activate_aggressive                 = true
 idiomatic_version_file_enable_tools = ["python"]
 npm.bun                             = true
+status.missing_tools                = "if_other_versions_installed"
+status.show_env                     = false
+status.show_tools                   = false
 
 [tools]
-# Languages, runtimes, and package managers
-bun  = "latest"
-go   = "latest"
-node = "lts"
-pnpm = "latest"
-uv   = "latest"
-python = "latest"
+# Languages, runtimes, and package managers (pinned to major.minor for stability)
+bun       = "1.3"  # Auto-updates to latest 1.3.x
+deno      = "2"    # Auto-updates to latest 2.x
+go        = "1.25" # Auto-updates to latest 1.25.x
+node      = "lts"  # Keep LTS strategy
+pnpm      = "10"   # Auto-updates to latest 10.x
+python    = "3.14" # Auto-updates to latest 3.14.x
+terraform = "1.9"  # Auto-updates to latest 1.9.x
+uv        = "0.8"  # Auto-updates to latest 0.8.x
 
-# Packages
-"npm:@anthropic-ai/claude-code" = "latest"
-"npm:@google/gemini-cli"        = "latest"
-"npm:repomix"                   = "latest"
-"npm:task-master-ai"            = "latest"
-"npm:ccusage"                   = "latest"
+# NPM packages (safe to keep on latest)
+"npm:@anthropic-ai/claude-code"      = "latest"
+"npm:@google/clasp"                  = "latest"
+"npm:@google/gemini-cli"             = "latest"
+"npm:@musistudio/claude-code-router" = "latest"
+"npm:ccusage"                        = "latest"
+"npm:repomix"                        = "latest"
+"npm:task-master-ai"                 = "latest"
 
-[env]
-_.path = ['{{config_root}}/node_modules/.bin']
+# Hooks to run on shell events
+[hooks]
+enter = "mise i -q"
+
+# Maintenance tasks
+[tasks.update]
+description = "Update all mise tools and clean up old versions"
+run = """
+  mise upgrade
+  mise prune
+"""
+
+[tasks.check]
+description = "Check mise health and show outdated tools"
+run = """
+  mise doctor
+  mise outdated
+"""
