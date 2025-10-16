@@ -5,17 +5,14 @@
 tap "anchordotdev/tap"
 tap "hashicorp/tap"
 tap "jwbargsten/misc"
-# tap "libsql/sqld"  # Removed - no formula available
 tap "oven-sh/bun"
 tap "smudge/smudge"
-tap "tursodatabase/tap"
 
 # =============================================================================
 # CORE SYSTEM UTILITIES
 # =============================================================================
 
 brew "coreutils"           # GNU core utilities
-brew "defaultbrowser"      # Set default browser from command line
 brew "gnupg"              # GNU Privacy Guard
 brew "gnutls"             # Cryptographic library
 brew "unbound"            # DNS resolver
@@ -31,20 +28,16 @@ brew "lefthook"           # Git hooks manager
 ## Configuration Management
 brew "chezmoi"            # Dotfiles manager
 brew "just"               # Command runner (justfile)
-
-## Language Tools & Runtimes
 brew "mise"               # Runtime version manager (replaces asdf)
 
 # =============================================================================
 # SHELL & TERMINAL ENHANCEMENTS
-# =============================================================================
-
-brew "antidote"           # Zsh plugin manager (replaces zinit)
+# =============================================================================       # Zsh plugin manager (replaces zinit)
 brew "starship"           # Cross-shell prompt
 
 ## CLI Tools with shell integration
 brew "fzf"                # Fuzzy finder
-brew "bat"                # Better cat with syntax highlighting  
+brew "bat"                # Better cat with syntax highlighting
 brew "ripgrep"            # Better grep
 brew "git-delta"          # Better git diff viewer
 brew "gh"                 # GitHub CLI
@@ -54,7 +47,6 @@ brew "jq"                 # JSON processor
 brew "eza"                # Better ls replacement
 brew "tre-command"        # Better find
 brew "usage"              # Better top/htop
-brew "tree"               # Directory tree viewer
 
 # =============================================================================
 # DATA & FILE PROCESSING
