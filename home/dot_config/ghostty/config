@@ -1,77 +1,82 @@
-########################################################################
-#  Ghostty configuration — validated for current stable release
-#  Last updated: 2025-08-02 (modernized with latest features)
-########################################################################
+###############
+# Behaviour
+###############
+auto-update = download
+auto-update-channel = stable
 
 ###############
 # Appearance
 ###############
-theme                 = dark:catppuccin-mocha,light:Builtin Solarized Light
-background-opacity    = 0.90
+theme = Catppuccin Macchiato
+background-opacity = 0.90
+background-blur = true
 background-blur-radius = 20
-bold-is-bright        = true
+bold-is-bright = true
 
 ###############
 # Window
 ###############
-window-decoration     = true
-window-theme          = auto
-window-padding-color  = extend
-window-padding-x      = 8
-window-padding-y      = 4
+window-decoration = true
+window-theme = auto
+window-padding-color = extend
+window-padding-x = 8
+window-padding-y = 4
 window-padding-balance = false
-window-colorspace     = "display-p3"
-adjust-cell-height    = 10%
-
-# Split appearance
-split-divider-color   = #585B70
+window-colorspace = display-p3
+adjust-cell-height = 10
+split-divider-color = #585B70
 
 ###############
-# Behaviour
+# Behavior
 ###############
-shell-integration-features = no-cursor,sudo
+shell-integration = detect
+shell-integration-features = true
 confirm-close-surface = false
-working-directory     = inherit
-
-# Modern mouse and selection behavior
-copy-on-select        = true
-focus-follows-mouse   = true
-cursor-click-to-move  = true
-
-# Enhanced shell integration
-shell-integration     = detect
+working-directory = inherit
+copy-on-select = true
+focus-follows-mouse = true
+cursor-click-to-move = true
 
 ###############
 # Fonts
 ###############
-font-family           = JetBrains Mono
-font-size             = 12
-font-feature          = +liga
-cursor-style          = block
-cursor-color          = #FFA500
-# font-fallback       = []
+font-family = JetBrains Mono
+font-size = 12
+font-feature = +liga
+cursor-style = block
+cursor-color = #FFA500
 
 ###############
 # Clipboard
 ###############
-clipboard-read              = allow
-clipboard-write             = allow
+clipboard-read = allow
+clipboard-write = allow
 clipboard-trim-trailing-spaces = true
 
 ###############
 # macOS Optimizations
 ###############
-macos-option-as-alt         = true
-macos-titlebar-style        = transparent
+macos-icon = retro
+# official, blueprint, chalkboard, microchip, glass, holographic, paper, retro, xray
+macos-option-as-alt = true
+macos-titlebar-style = transparent
+macos-shortcuts = allow
 
-#########################################################
-# Key-bindings  (prefix = cmd+s, tmux-style ergonomics)
-#########################################################
-# Splits
+###############
+# Keybindings (cmd+s prefix, tmux-style)
+###############
+
+# Splits (hjkl navigation)
 keybind = cmd+s>\=new_split:right
 keybind = cmd+s>-=new_split:down
 keybind = cmd+s>z=toggle_split_zoom
 keybind = cmd+s>e=equalize_splits
+
+# Navigate splits (modern syntax)
+keybind = cmd+s>j=goto_split:down
+keybind = cmd+s>k=goto_split:up
+keybind = cmd+s>h=goto_split:left
+keybind = cmd+s>l=goto_split:right
 
 # Tabs
 keybind = cmd+s>c=new_tab
@@ -90,13 +95,7 @@ keybind = cmd+s>8=goto_tab:8
 keybind = cmd+s>9=goto_tab:9
 keybind = cmd+s>x=close_tab
 
-# Navigate splits (modern syntax)
-keybind = cmd+s>j=goto_split:down
-keybind = cmd+s>k=goto_split:up
-keybind = cmd+s>h=goto_split:left
-keybind = cmd+s>l=goto_split:right
-
-# Enhanced actions with performable prefix
+# Enhanced actions (performable for overrides)
 keybind = performable:cmd+c=copy_to_clipboard
 keybind = performable:cmd+v=paste_from_clipboard
 keybind = performable:cmd+s>u=copy_url_to_clipboard
