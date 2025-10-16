@@ -1,0 +1,16 @@
+# ~/.zshenv
+# This file is ALWAYS sourced first, so it's the bootstrap for everything else.
+# Keep it minimal - only XDG and ZDOTDIR setup.
+
+export XDG_CONFIG_HOME="${HOME}/.config"
+export XDG_CACHE_HOME="${HOME}/.cache"
+export XDG_DATA_HOME="${HOME}/.local/share"
+export XDG_STATE_HOME="${HOME}/.local/state"
+
+# Create XDG directories if they don't exist
+for dir in "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME"; do
+  [[ ! -d "$dir" ]] && mkdir -p "$dir"
+done
+
+# Set custom ZSH config location
+export ZDOTDIR="${XDG_CONFIG_HOME}/zsh"
