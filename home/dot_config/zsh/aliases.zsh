@@ -10,11 +10,12 @@ else
     alias ll='ls -lh'
     alias la='ls -lah'
 fi
-alias grep='grep --color=always'
+
+
+alias grep='grep --color=auto'
 alias cp='cp -iv'
 alias mv='mv -iv'
 alias mkdir='mkdir -pv'
-alias kill='kill -9'
 alias rm='rm -i'
 alias rmd='rm -rf'
 alias ax='chmod a+x'
@@ -44,7 +45,6 @@ alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\
 alias gp='git push'
 alias gpl='git pull'
 alias gs='git status'
-alias gst='git status'
 alias gb='git branch'
 alias gco='git checkout'
 alias gcb='git checkout -b'
@@ -69,77 +69,32 @@ alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete"
 # My aliases
 alias brew='$HOMEBREW_PREFIX/bin/brew'
 alias cz="chezmoi"
-refresh() {
-    source ~/.zshrc
-}
-# Tree aliases based on available tools
-if command -v eza &> /dev/null; then
-    alias tr="eza --tree --git-ignore --color=always --group-directories-first"
-else
-    alias tr="tree -a -C --gitignore"
-fi
+alias refresh='source ~/.zshrc'
 
-# New tools from your Brewfile (safe aliases that don't override system commands)
+# New tools from your Brewfile
 alias tre='tre-command'     # Tree-like find alternative
-alias usage='usage'         # Modern top alternative
-# Note: bat alias for cat defined above in conditional section
-
-# Additional useful aliases for new tools
-alias llm='ollama'
 alias act='act --container-architecture linux/amd64'  # GitHub Actions local testing
-alias mise-activate='eval "$(mise activate zsh)"'
 
 # Task master
 alias tm='task-master'
 alias taskmaster='task-master'
 
-# Function for flexibility (takes an optional filename) and fallback editor.
-# Usage: scripts [filename_in_scripts_dir]
-# If no filename, opens the ~/.scripts directory (or a file named .scripts) with the editor.
-scripts() {
-    local editor="${VISUAL:-${EDITOR:-vi}}" # Use $VISUAL, then $EDITOR, then vi
-    local target_path="$HOME/.scripts"
-    if [[ -n "$1" ]]; then
-        # If an argument is provided, assume it's a file within ~/.scripts
-        target_path="$target_path/$1"
-    fi
-    command "$editor" "$target_path"
-}
+# Open scripts directory or specific script file
+scripts() { $EDITOR "${1:+$HOME/.scripts/$1}${1:-$HOME/.scripts}"; }
 
-alias czconfig="${VISUAL:-${EDITOR:-vi}} $HOME/.config/chezmoi/chezmoi.yaml"
+czconfig() { $EDITOR "$HOME/.config/chezmoi/chezmoi.yaml"; }
 alias dotfiles="cz edit"
 
-# Function to run 'refresh' only if 'cz apply' succeeds and provides feedback.
-dotsave() {
-    if command chezmoi apply; then
-        echo "Chezmoi changes applied. Reloading Zsh..."
-        refresh # 'refresh' is assumed to be an alias for 'source ~/.zshrc'
-    else
-        echo "Error: 'chezmoi apply' failed. Zsh not reloaded." >&2
-        return 1 # Indicates failure
-    fi
-}
-
-# Function to reload Zsh (via 'refresh'), adds feedback,
-zshconfig() {
-    if command chezmoi edit "$HOME/.config/zsh"; then # Edit Zsh config dir
-        echo "Zsh configuration edited. Reloading Zsh..."
-        refresh # Reload Zsh using the 'refresh' alias
-    else
-        echo "Error: Editing Zsh configuration failed or was cancelled. Zsh not reloaded." >&2
-        return 1 # Indicates failure
-    fi
-}
+# Chezmoi workflow shortcuts
+alias dotsave='chezmoi apply && source ~/.zshrc'
+alias zshconfig='chezmoi edit ~/.config/zsh'
 
 # 1PASSWORD SECRET MANAGEMENT
 # Secure command execution with secrets loaded from 1Password
 alias runwithsecrets='op run --env-file="$HOME/.local/share/secrets/secrets.env" --'
-alias rwsecrets='runwithsecrets'  # Short alias
-alias opsecrets='op run --env-file="$HOME/.local/share/secrets/secrets.env" --'
 
 # GitHub Actions & Claude Code setup
 alias setup-cc='op run --env-file="$HOME/.local/share/secrets/secrets.env" -- setup-cc'
-alias setup-claude='setup-cc'  # Alternative alias
 
 # Helper function to run commands with specific secret categories
 runwithwork() {
@@ -153,42 +108,16 @@ runwithwork() {
 
 # Validate secrets are accessible
 checksecrets() {
-    echo "Checking 1Password CLI authentication..."
-    if ! command -v op &> /dev/null; then
-        echo "❌ 1Password CLI not installed"
-        return 1
-    fi
-
-    if ! op account get &> /dev/null; then
-        echo "❌ 1Password CLI not authenticated. Run: op signin"
-        return 1
-    fi
-
-    echo "✅ 1Password CLI authenticated"
-
-    if [[ -f "$HOME/.local/share/secrets/secrets.env" ]]; then
-        echo "✅ Secrets environment file exists"
-        echo "Usage: runwithsecrets your-command [args]"
-    else
-        echo "❌ Secrets environment file not found. Run: chezmoi apply"
-        return 1
-    fi
+    command -v op >/dev/null || { echo "❌ op not installed"; return 1; }
+    op account get &>/dev/null || { echo "❌ Not authenticated. Run: op signin"; return 1; }
+    [[ -f "$HOME/.local/share/secrets/secrets.env" ]] || { echo "❌ secrets.env missing"; return 1; }
+    echo "✅ All checks passed. Usage: runwithsecrets <command>"
 }
 
 # USEFUL FUNCTIONS (merged from functions.zsh)
 
-# Function to update all plugins and packages
-update_all() {
-  echo "Updating brew packages..."
-  brew update && brew upgrade
-  echo "Updating antidote and plugins..."
-  antidote update
-  echo "Updating mise tools..."
-  mise upgrade
-  echo "Updating ollama models..."
-  ollama list | tail -n +2 | awk '{print $1}' | xargs -I {} ollama pull {}
-  echo "Done!"
-}
+# Update all tools (uses mise task for tool management)
+alias updates='brew update && brew upgrade && zinit self-update && zinit update --parallel && mise run update'
 
 # Quick development server with Python
 serve() {

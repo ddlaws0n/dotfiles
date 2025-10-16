@@ -1,4 +1,4 @@
 {{- if .work_computer -}}
-    WIZ_CLIENT_ID="{{- onepasswordRead .work.wiz_client_id .work_1p_account }}"
-    WIZ_CLIENT_SECRET="{{- onepasswordRead .work.wiz_client_secret .work_1p_account }}"
+    WIZ_CLIENT_ID="{{- onepasswordRead .chezmoidata.secrets.work_secrets.wiz_client_id .work_1p_account }}"
+    WIZ_CLIENT_SECRET="{{- onepasswordRead .chezmoidata.secrets.work_secrets.wiz_client_secret .work_1p_account }}"
 {{- end }}

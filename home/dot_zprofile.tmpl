@@ -13,7 +13,6 @@ export XDG_STATE_HOME="{{ .chezmoi.homeDir }}/.local/state"
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
 ## Essential PATH setup (before mise activation)
-# Add Homebrew to PATH if not already present
 if [[ -d "/opt/homebrew/bin" ]] && [[ ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
   export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
   export HOMEBREW_PREFIX="/opt/homebrew"
@@ -22,73 +21,57 @@ elif [[ -d "/usr/local/bin" ]] && [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
   export HOMEBREW_PREFIX="/usr/local"
 fi
 
-# Add essential user paths
-for dir in "$HOME/.scripts" "$HOME/.local/bin" "/Users/dlawson/.codeium/windsurf/bin"; do
+# User/local paths: prepend for developer tools to take precedence
+for dir in "$HOME/.local/bin" "$HOME/.scripts" "/Users/dlawson/.codeium/windsurf/bin"; do
   if [[ -d "$dir" ]] && [[ ":$PATH:" != *":$dir:"* ]]; then
-    export PATH="$PATH:$dir"
+    export PATH="$dir:$PATH"
   fi
 done
 
 ## Language environment managers
-# Note: bun, go, node, pnpm, uv are managed by mise activate
-# Only export variables for tools that need them but aren't PATH-managed by mise
-
-# Bun - mise manages the PATH, but some tools expect BUN_INSTALL
 if command -v mise &> /dev/null && mise list bun &> /dev/null; then
   export BUN_INSTALL="$(mise where bun 2>/dev/null || echo "$HOME/.bun")"
 fi
 
-# Golang - mise manages the PATH, but some tools expect GOPATH
 if command -v mise &> /dev/null && mise list go &> /dev/null; then
-  export GOPATH="$HOME/go"  # Standard location for Go workspace
+  export GOPATH="$HOME/go"
 fi
-
-# Note: Non-mise tools (Windsurf, local bins) are managed by path.zsh
 
 ## Custom paths and environment variables
 {{ if .work_computer }}
-# Wiz credentials
 export WIZ_DOTENV_PATH="$XDG_CONFIG_HOME/wiz/.env"
 {{ end }}
 
 {{ if and .use_secrets (not .is_ci_workflow) }}
-# API Keys
 export OPENROUTER_API_KEY="{{ if .secrets }}{{ onepasswordRead .secrets.openrouter_api_key .personal_1p_account }}{{ end }}"
 export FIRECRAWL_API_KEY="{{ if .secrets }}{{ onepasswordRead .secrets.firecrawl_api_key .personal_1p_account }}{{ end }}"
 {{ end }}
 
 ## Editor preferences
 export EDITOR="nano"
-export VISUAL="code"
-
-# Pager
+export VISUAL="code -w"
 export PAGER="less"
 
-### Locale settings
+## Locale settings
 export LANG="en_US.UTF-8"
 
 ## ZSH Completions Setup
-# FPATH must be set before compinit runs in ZDOTDIR
 fpath=(
+  $HOME/.local/share/zsh/site-functions
   $HOMEBREW_PREFIX/share/zsh/site-functions
-  $HOME/.local/share/zsh/site-functions  # Custom completions
   $fpath
 )
 
 ## Tool activations
-
-# Activate mise for version management (primary activation point)
 if command -v mise &> /dev/null; then
-    eval "$(mise activate zsh)"
+  eval "$(mise activate zsh)"
 fi
 
-# FZF key bindings and fuzzy completion
 if [ -f ~/.fzf.zsh ]; then
-    source ~/.fzf.zsh
+  source ~/.fzf.zsh
 elif [ -f "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]; then
-    source "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
-    source "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"
 fi
 
-# FZF theming to match Catppuccin Mocha (same as Ghostty theme)
 export FZF_DEFAULT_OPTS="--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6ac,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6ac,hl+:#f38ba8"

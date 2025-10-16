@@ -29,7 +29,48 @@ if [[ -f "$ZDOTDIR/catppuccin-bright.ini" ]]; then
   source "$ZDOTDIR/catppuccin-bright.ini"
 fi
 
-# Completion styles handled in completions.zsh
+# Completion configuration - daily cache for performance
+autoload -Uz compinit
+if [ "$(date +'%j')" != "$(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)" ]; then
+  compinit
+else
+  compinit -C
+fi
+
+# Completion styles
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*:*:*:*:*' menu select
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
+zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+
+# Bash completions support
+autoload -U +X bashcompinit && bashcompinit
+
+# Dynamic completions (only for tools requiring runtime generation)
+# Note: Most tools are auto-loaded via FPATH from Homebrew/mise
+# Only add here if tool requires dynamic generation AND isn't in FPATH
+
+if command -v terraform &> /dev/null; then
+  complete -o nospace -C terraform terraform  # Terraform uses bash-style completion
+fi
+
+if command -v kubectl &> /dev/null; then
+  source <(kubectl completion zsh)  # Kubernetes requires dynamic generation
+fi
+
+if command -v op &> /dev/null; then
+  eval "$(op completion zsh)"  # 1Password CLI requires dynamic generation
+fi
+
+if command -v docker &> /dev/null; then
+  source <(docker completion zsh)  # Docker requires dynamic generation
+fi
+
+if command -v bun &> /dev/null && [[ -f "$BUN_INSTALL/_bun" ]]; then
+  source "$BUN_INSTALL/_bun"  # Bun shell integration (more than just completion)
+fi
 
 # History configuration
 HISTFILE=~/.zsh_history
@@ -49,10 +90,8 @@ export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=46;34:cd=43;34:su=41;30:sg=46
 bindkey '^p' history-search-backward    # Ctrl+P for previous matching command
 bindkey '^n' history-search-forward     # Ctrl+N for next matching command
 
-# Load configuration files
-for config_file in "$ZDOTDIR"/aliases.zsh "$ZDOTDIR"/completions.zsh; do
-  [[ -r "$config_file" ]] && source "$config_file"
-done
+# Load aliases
+[[ -r "$ZDOTDIR/aliases.zsh" ]] && source "$ZDOTDIR/aliases.zsh"
 
 # External integrations
 [[ -f ~/.config/op/plugins.sh ]] && source ~/.config/op/plugins.sh
