@@ -39,7 +39,7 @@ $line_break\
 $character\
 """
 
-palette = 'gruvbox_light'
+palette = 'catppuccin_macchiato'
 
 [palettes.default]
 
@@ -115,6 +115,31 @@ color_duration = '#282828'
 color_vimcmd_ok = '#689d6a'
 color_vimcmd_replace = '#b16286'
 color_vimcmd_visual = '#d79921'
+
+[palettes.catppuccin_macchiato]
+
+color_ok = '#a6da95'
+color_danger = '#ed8796'
+color_caution = '#eed49f'
+
+color_os = '#f5a97f'
+color_username = '#f5a97f'
+color_directory = '#eed49f'
+color_git = '#8bd5ca'
+color_git_added = '#a6da95'
+color_git_deleted = '#ed8796'
+color_env = '#8aadf4'
+color_kubernetes = '#c6a0f6'
+color_docker = '#8aadf4'
+color_shell = '#a5adcb'
+color_container = '#ee99a0'
+color_other = '#b8c0e0'
+color_time = '#cad3f5'
+color_duration = '#cad3f5'
+
+color_vimcmd_ok = '#a6da95'
+color_vimcmd_replace = '#c6a0f6'
+color_vimcmd_visual = '#eed49f'
 
 [os]
 disabled = false
